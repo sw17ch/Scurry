@@ -1,9 +1,14 @@
 module Main where
 
-import System.Environment
 import Scurry.Scurry
-import System.Console.GetOpt
 import Scurry.Data.Network
+import Scurry.UI
+
+import Control.Concurrent.MVar
+
+import System.Environment
+import System.Exit
+import System.Console.GetOpt
 
 data Opt = OVPNAddr  VPNAddr
          | OVPNMask  IPV4Addr
@@ -51,7 +56,11 @@ main :: IO ()
 main = withSocketsDo $ do
     putStrLn "Scurry 0.1.0"
 
+    m <- newEmptyMVar
+
     args <- getArgs
     case parseOpts args of
-        (Left  u) -> putStrLn u
-        (Right s) -> print s
+        (Left  u) -> putStrLn u >> exitFailure
+        (Right s) -> putMVar m s
+
+    ui m
