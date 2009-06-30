@@ -1,21 +1,58 @@
+{-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
+
 module Scurry.UI where
 
 import Scurry.Scurry
 import Scurry.Config
 
-import Hack
-import qualified Hack.Handler.Happstack as H
-
 import Control.Concurrent.MVar
-import qualified Data.ByteString.Lazy.Char8 as BS
 
-hackConf :: H.ServerConf
-hackConf = H.ServerConf { H.port = 24999, H.serverName = "localhost" }
+import Network.Shed.Httpd
+import Network.URI
+
+port :: Int
+port = 24999
+
+defResponse :: Response
+defResponse = Response {
+    resCode = 200,
+    resHeaders = [contentType "text/plain"],
+    resBody = "Default Response"
+}
+
+htmlOK :: String -> Response
+htmlOK body = defResponse {
+    resHeaders = [contentType "text/html"],
+    resBody = body
+}
+
+javaScriptOK :: String -> Response
+javaScriptOK body = defResponse {
+    resHeaders = [contentType "text/javascript"],
+    resBody = body
+}
+
+styleSheetOK :: String -> Response
+styleSheetOK body = defResponse {
+    resHeaders = [contentType "text/css"],
+    resBody = body
+}
 
 ui :: (MVar Scurry) -> IO ()
-ui s = H.runWithConfig hackConf $ app s
+ui mv = initServer port (server mv)
 
-app :: (MVar Scurry) -> Application
-app s = \env -> do
-    r <- uiIndex >>= BS.readFile
-    return $ Response 200 [ ("Content-Type", "text/html") ] r
+logger :: Request -> IO ()
+logger r = print r
+
+loadUI :: IO FilePath -> IO String
+loadUI f = f >>= readFile
+
+server :: (MVar Scurry) -> Request -> IO Response
+server mv r@(Request {reqURI}) = do
+    logger r
+
+    case uriPath reqURI of
+        "/index"  -> loadUI uiIndex  >>= (return . htmlOK)
+        "/jquery" -> loadUI uiJQuery >>= (return . javaScriptOK)
+        "/style"  -> loadUI uiStyle  >>= (return . styleSheetOK)
+        _         -> return (htmlOK "Unknown page")

@@ -11,22 +11,21 @@ Copyright:      John Van Enk, 2009
 Build-Type:     Simple
 Cabal-Version:  >= 1.2.0
 
-Data-Files:     ui/index.html
+Data-Files:     ui/index.html,
+                ui/jquery-1.3.1.js,
+                ui/style.css
 
 executable scurry
-    build-depends: base     >= 4        && < 5
-    build-depends: binary   >= 0.5.0.1  && < 0.6
-    build-depends: network  >= 2.2.1.1  && < 2.3
-    build-depends: bytestring
-                            >= 0.9.1.4  && < 0.9.2
-    build-depends: network-bytestring
-                            >= 0.1.2.1  && < 0.2
-    build-depends: directory
-                            >= 1.0.0.3  && < 1.0.1
-    build-depends: hack-handler-happstack
-                            >= 2009.6.5 && < 2009.7
-    build-depends: hack
-                            >= 2009.5.19 && < 2009.6
+    build-depends: base                     >= 4        && < 5,
+                   binary                   == 0.5,
+                   network                  >= 2.2.1.1  && < 2.3,
+                   mtl                      >= 1.1.0.2  && < 1.1.1,
+                   html                     >= 1.0.1.2  && < 1.0.2,
+                   bytestring               >= 0.9.1.4  && < 0.9.2,
+                   network-bytestring       >= 0.1.2.1  && < 0.2,
+                   directory                >= 1.0.0.3  && < 1.0.1,
+                   httpd-shed
+
 
     hs-source-dirs:     src
     ghc-options:        -Wall -threaded
@@ -39,13 +38,13 @@ executable scurry
         cpp-options:        -DCALLCONV=stdcall
 
     if os(linux)
-        build-depends: unix >= 2.3.0.0
+        build-depends:      unix >= 2.3.0.0
         c-sources:          src/C/help-linux.c
         cc-options:         -D LINUX
         cpp-options:        -DCALLCONV=ccall
 
     if os(darwin) || os(freebsd)
-        build-depends: unix >= 2.3.0.0
+        build-depends:      unix >= 2.3.0.0
         c-sources:          src/C/help-bsd.c
         cc-options:         -D BSD
         cpp-options:        -DCALLCONV=ccall
