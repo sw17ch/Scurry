@@ -7,6 +7,7 @@ import Scurry.Config
 
 import Control.Concurrent.MVar
 
+import Network.Socket (inet_addr)
 import Network.Shed.Httpd
 import Network.URI
 
@@ -39,7 +40,9 @@ styleSheetOK body = defResponse {
 }
 
 ui :: (MVar Scurry) -> IO ()
-ui mv = initServer port (server mv)
+ui mv = do
+    a <- inet_addr "127.0.0.1" 
+    initServerBind port a (server mv)
 
 logger :: Request -> IO ()
 logger r = print r
