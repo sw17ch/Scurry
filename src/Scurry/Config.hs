@@ -4,6 +4,7 @@ module Scurry.Config (
     uiIndex,
     uiJQuery,
     uiStyle,
+    uiScript,
 ) where
 
 import System.Directory
@@ -26,3 +27,6 @@ uiJQuery = getDataFileName "ui/jquery-1.3.1.js"
 
 uiStyle :: IO FilePath
 uiStyle = getDataFileName "ui/style.css"
+
+uiScript :: IO FilePath
+uiScript = getDataFileName "ui/script.js"

@@ -58,4 +58,10 @@ server mv r@(Request {reqURI}) = do
         "/index"  -> loadUI uiIndex  >>= (return . htmlOK)
         "/jquery" -> loadUI uiJQuery >>= (return . javaScriptOK)
         "/style"  -> loadUI uiStyle  >>= (return . styleSheetOK)
+        "/script" -> loadUI uiScript >>= (return . javaScriptOK)
+        ('/':'c':'m':'d':_) -> handleCmd mv r
         _         -> return (htmlOK "Unknown page")
+
+handleCmd :: (MVar Scurry) -> Request -> IO Response
+handleCmd mv r@(Request {..}) = do
+    return $ javaScriptOK "{\"hello\" : \"world\"}"
