@@ -9,6 +9,7 @@ module Scurry.Data.Network (
     module Network.Socket,
 ) where
 
+import Data.Data
 import Data.Word
 
 import Control.Monad
@@ -22,9 +23,9 @@ import Network.Socket hiding (send, sendTo,
                               inet_addr, inet_ntoa)
 -- import Network.Socket.ByteString
 
-newtype IPV4Addr = MkIPV4Addr { unIPV4Addr :: HostAddress }
-newtype IPPort   = MkIPPort   { unIPPort   :: PortNumber  }
-newtype VPNAddr  = MkVPNAddr  { unVpnAddr  :: IPV4Addr    }
+newtype IPV4Addr = MkIPV4Addr HostAddress deriving (Data,Typeable)
+newtype IPPort   = MkIPPort   Word16      deriving (Data,Typeable)
+newtype VPNAddr  = MkVPNAddr  IPV4Addr    deriving (Data,Typeable)
 
 inet_addr :: String -> Maybe IPV4Addr
 inet_addr = unsafePerformIO . catchToMaybe . mk
@@ -53,16 +54,15 @@ instance Read VPNAddr where
     readsPrec _ r = [(MkVPNAddr v,"")]
         where v = read r
 
-
 instance Show IPV4Addr where
     show a = case inet_ntoa a of
                   Just s -> s
                   Nothing -> error "This should never happen evar! O_o"
 
 instance Show VPNAddr where
-    show a = case inet_ntoa (unVpnAddr a) of
-                  Just s -> s
-                  Nothing -> error "This should never happen evar! O_o"
+    show (MkVPNAddr a)= case inet_ntoa a of
+                           Just s -> s
+                           Nothing -> error "This should never happen evar! O_o"
 
 instance Show IPPort where
-    show p = show . unIPPort $ p
+    show (MkIPPort p) = show p
