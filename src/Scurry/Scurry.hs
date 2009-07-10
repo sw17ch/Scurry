@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module Scurry.Scurry (
     Scurry(..),
     defaultScurry
@@ -5,13 +6,16 @@ module Scurry.Scurry (
 
 import Scurry.Data.Network
 
+import Data.Data
+import Text.JSON.Generic
+
 data Scurry = Scurry {
     vpnAddr  :: Maybe VPNAddr,
     vpnMask  :: Maybe IPV4Addr,
     bindAddr :: IPV4Addr,
     bindPort :: IPPort,
     peerName :: String
-} deriving (Show)
+} deriving (Show,Data,Typeable)
 
 defaultScurry :: Scurry
 defaultScurry = Scurry {

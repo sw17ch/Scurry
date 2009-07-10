@@ -7,37 +7,14 @@ import Scurry.Config
 
 import Control.Concurrent.MVar
 
+import Text.JSON.Generic
+
 import Network.Socket (inet_addr)
 import Network.Shed.Httpd
 import Network.URI
 
 port :: Int
 port = 24999
-
-defResponse :: Response
-defResponse = Response {
-    resCode = 200,
-    resHeaders = [contentType "text/plain"],
-    resBody = "Default Response"
-}
-
-htmlOK :: String -> Response
-htmlOK body = defResponse {
-    resHeaders = [contentType "text/html"],
-    resBody = body
-}
-
-javaScriptOK :: String -> Response
-javaScriptOK body = defResponse {
-    resHeaders = [contentType "text/javascript"],
-    resBody = body
-}
-
-styleSheetOK :: String -> Response
-styleSheetOK body = defResponse {
-    resHeaders = [contentType "text/css"],
-    resBody = body
-}
 
 ui :: (MVar Scurry) -> IO ()
 ui mv = do
@@ -63,5 +40,41 @@ server mv r@(Request {reqURI}) = do
         _         -> return (htmlOK "Unknown page")
 
 handleCmd :: (MVar Scurry) -> Request -> IO Response
-handleCmd mv r@(Request {..}) = do
-    return $ javaScriptOK "{\"hello\" : \"world\"}"
+handleCmd mv r@(Request {}) = do
+    (readMVar mv) >>= (return . jsApplicationOK . encodeJSON)
+
+-- Default response
+defResponse :: Response
+defResponse = Response {
+    resCode = 200,
+    resHeaders = [contentType "text/plain"],
+    resBody = "Default Response"
+}
+
+-- Wrap string response as HTML
+htmlOK :: String -> Response
+htmlOK body = defResponse {
+    resHeaders = [contentType "text/html"],
+    resBody = body
+}
+
+-- Wrap string response as JavaScript
+javaScriptOK :: String -> Response
+javaScriptOK body = defResponse {
+    resHeaders = [contentType "text/javascript"],
+    resBody = body
+}
+
+-- Wrap string response as CSS
+styleSheetOK :: String -> Response
+styleSheetOK body = defResponse {
+    resHeaders = [contentType "text/css"],
+    resBody = body
+}
+
+-- Write string response as JavaScript Application
+jsApplicationOK :: String -> Response
+jsApplicationOK body = defResponse {
+    resHeaders = [contentType "application/x-javascript"],
+    resBody = body
+}

@@ -60,7 +60,5 @@ main = withSocketsDo $ do
 
     args <- getArgs
     case parseOpts args of
-        (Left  u) -> putStrLn u >> exitFailure
-        (Right s) -> putMVar m s
-
-    ui m
+        (Left  u) -> putStrLn u  >> exitFailure
+        (Right s) -> putMVar m s >> ui m

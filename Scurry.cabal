@@ -26,7 +26,8 @@ executable scurry
                    bytestring               >= 0.9.1.4  && < 0.9.2,
                    network-bytestring       >= 0.1.2.1  && < 0.2,
                    directory                >= 1.0.0.3  && < 1.0.1,
-                   httpd-shed
+                   httpd-shed               >= 0.4      && < 0.5,
+                   json                     >= 0.4.3    && < 0.5
 
 
     hs-source-dirs:     src
