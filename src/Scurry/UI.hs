@@ -16,8 +16,8 @@ import Network.URI
 port :: Int
 port = 24999
 
-ui :: (MVar Scurry) -> IO ()
-ui mv = do
+ui :: (MVar Scurry) -> (MVar ()) -> IO ()
+ui mv shutdown = do
     a <- inet_addr "127.0.0.1" 
     initServerBind port a (server mv)
 

@@ -1,7 +1,14 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module Scurry.Exception (
+    ScurryException(..),
 ) where
 
+import Data.Data
 import Control.Exception.Base
 
-data ScurryException = Teardown
-    deriving (Show,Data,Typeable)
+data ScurryException = TearDown
+    deriving (Show,Typeable)
+
+instance Exception ScurryException
+
+
