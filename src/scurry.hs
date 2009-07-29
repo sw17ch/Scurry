@@ -3,7 +3,9 @@ module Main where
 import Scurry.Scurry
 import Scurry.Data.Network
 import Scurry.UI
+import Scurry.Exception
 
+import Control.Concurrent
 import Control.Concurrent.MVar
 
 import System.Environment
@@ -52,6 +54,25 @@ parseOpts args = case args of
                         OBindPort p -> s { bindPort = p }
                         OPeerName n -> s { peerName = n }
 
+begin :: (MVar Scurry) -> IO ()
+begin m = do
+    -- Cleanup gets set when the connected UI agent
+    -- signals that things should wrap up and kill
+    -- the process.
+    cleanup <- newEmptyMVar
+
+    ui_t <- forkIO $ ui m cleanup
+
+    takeMVar cleanup
+
+    -- Inform the UI thread that we're cleaning up
+    throwTo ui_t TearDown
+
+    -- Wait 5 seconds for everything to clean up
+    threadDelay (5 * 1000000)
+
+    -- Done!
+
 main :: IO ()
 main = withSocketsDo $ do
     putStrLn "Scurry 0.1.0"
@@ -61,4 +82,4 @@ main = withSocketsDo $ do
     args <- getArgs
     case parseOpts args of
         (Left  u) -> putStrLn u  >> exitFailure
-        (Right s) -> putMVar m s >> ui m
+        (Right s) -> putMVar m s >> begin m
