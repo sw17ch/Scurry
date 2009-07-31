@@ -19,16 +19,14 @@
 
 struct tap_desc
 {
-    uint32_t     desc;
+    int32_t      desc;
     int32_t      sock;
     struct ifreq ifr;
 };
 
 tap_desc_t * init_tap()
 {
-    tap_desc_t * td = malloc(sizeof(tap_desc_t));
-    CLEAR(td);
-    return td;
+    return (tap_desc_t *) calloc(1,sizeof(tap_desc_t));
 }
 
 void finish_tap(tap_desc_t * td)
@@ -36,9 +34,9 @@ void finish_tap(tap_desc_t * td)
     free(td);
 }
 
-int32_t open_tap(tap_desc_t * td, int8_t * name)
+int32_t open_tap(tap_desc_t * td, char * name)
 {
-    const int8_t dev[] = "/dev/net/tun";
+    char * dev = "/dev/net/tun";
 
     if (0 == td)
     {
@@ -146,6 +144,8 @@ int32_t set_mask(tap_desc_t * td, uint32_t mask)
         fprintf(stderr,"SIOCSIFNETMASK: %s\n", strerror(errno));
         return -1;
     }
+
+    return 0;
 }
 
 int32_t get_mac(tap_desc_t * td, MACAddr mac)
@@ -163,12 +163,12 @@ int32_t get_mac(tap_desc_t * td, MACAddr mac)
     return 0;
 }
 
-int32_t read_tap(tap_desc_t * td, int8_t * buf, int32_t len)
+int32_t read_tap(tap_desc_t * td, uint8_t * buf, int32_t len)
 {
     return read(td->desc,buf,len);
 }
 
-int32_t write_tap(tap_desc_t * td, const int8_t * buf, int32_t len)
+int32_t write_tap(tap_desc_t * td, const uint8_t * buf, int32_t len)
 {
     return write(td->desc,buf,len);
 }
