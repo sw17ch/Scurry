@@ -34,6 +34,7 @@ executable scurry
     hs-source-dirs:     src
     ghc-options:        -Wall -threaded
     main-is:            scurry.hs
+    cc-options:         -Wall
 
     if os(mingw32)
         c-sources:          src/C/help-win.c
