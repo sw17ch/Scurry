@@ -20,6 +20,8 @@ module Scurry.FFI (
     readTAP,
     writeTAP,
 
+    withTAP,
+
     test,
 ) where
 
@@ -29,6 +31,8 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Data.Word
+
+import Control.Monad
 
 -- A TAP device desciptor
 newtype TAP = TAP (Ptr TAPDesc)
@@ -107,7 +111,25 @@ writeTAP :: TAP -> RemotePKT -> Int -> IO CInt
 writeTAP (TAP p) (RemotePKT pkt) len = withForeignPtr pkt $ \pkt' -> do
     wlen <- write_tap_ffi p pkt' (fromIntegral len)
     return wlen
+
+-- Some bracketing functions
     
+-- |Accept an action and an MTU. Allocate a TAP and
+-- pass it to the action. Clean up when finished with
+-- the action.
+withTAP :: Int -> (TAP -> IO a) -> IO ()
+withTAP m a = do
+    tap <- start
+
+    openTAP tap "scurry0"
+    setMTU tap m
+    bringUp tap
+    a tap -- the passed action
+    closeTAP tap
+    finish tap
+
+    return ()
+
 
 -- tap_desc_t * init_tap();
 foreign import CALLCONV "help.h init_tap" init_tap_ffi :: IO (Ptr TAPDesc)
@@ -143,23 +165,13 @@ foreign import CALLCONV "help.h read_tap" read_tap_ffi :: (Ptr TAPDesc) -> (Ptr 
 foreign import CALLCONV "help.h write_tap" write_tap_ffi :: (Ptr TAPDesc) -> (Ptr TAPPacket) -> CInt -> IO CInt
 
 test :: IO ()
-test = do
-    d <- start
-    openTAP d "scurry0"
-    setMTU d 1200
-    setIP d 0x0A0A0A0A
-    setMask d 0x00FFFFFF
-    bringUp d
-    m <- getMAC d
+test = withTAP 1200 $ \d -> do
+    setIP d 0x0100000A   -- 10.0.0.1
+    setMask d 0x00FFFFFF -- 255.255.255.0
 
-    (l,p) <- readTAP d
+    getMAC d >>= print
 
-    print l
-    print p
-    print m
+    forever $ readTAP d
 
-    closeTAP d
-    finish d
-
-    putStrLn "Done"
+    return ()
 
