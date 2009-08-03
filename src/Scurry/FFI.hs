@@ -30,41 +30,21 @@ import Foreign.C.String
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
-import Foreign.Storable
 import Data.Word
 
 import Control.Monad
 
 import Scurry.Data.Packet
 
+data TAPDesc
+
 -- A TAP device desciptor
 newtype TAP = TAP (Ptr TAPDesc)
     deriving (Show)
 
--- Read from a TAP device
-newtype LocalPKT = LocalPKT (ForeignPtr TAPPacket)
-    deriving (Show)
-
--- Read from a Socket
-newtype RemotePKT = RemotePKT (ForeignPtr TAPPacket)
-    deriving (Show)
-
-class Frame a where
-    fromFrame :: a -> IO Ethernet
-    toFrame   :: Ethernet -> IO a
-
-instance Frame LocalPKT where
-    fromFrame (LocalPKT p) = withForeignPtr p $ peek . castPtr
-    toFrame e = do p <- mallocForeignPtrBytes $ sizeOf (undefined :: Ethernet) 
-                   withForeignPtr p $ \p' -> poke (castPtr p') e
-                   return $ LocalPKT p
-
 maxPktSize :: Int
 maxPktSize = 1560
     
-data TAPDesc
-data TAPPacket
-
 -- |Allocate a TAP resource
 start :: IO TAP
 start = init_tap_ffi >>= (return . TAP)
