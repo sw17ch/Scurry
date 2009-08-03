@@ -15,9 +15,14 @@ import Foreign.Marshal.Array
 import Foreign.Ptr
 
 import Data.Word
+import Data.List
+import Data.Bits
+import Text.Printf
 
 newtype MACAddr = MACAddr [Word8]
-    deriving (Show)
+
+instance Show MACAddr where
+    show (MACAddr m) = concat $ intersperse ":" $ map (printf "%02X") m
 
 mkMACAddr :: [Word8] -> MACAddr
 mkMACAddr m = case length m of
@@ -27,8 +32,11 @@ mkMACAddr m = case length m of
 unMACAddr :: MACAddr -> [Word8]
 unMACAddr (MACAddr m) = m
 
-newtype EthType = EthType Word16
-    deriving (Show,Num,Eq,Storable)
+newtype EthType = EthType { unEthType :: Word16 }
+    deriving (Num,Eq,Storable)
+
+instance Show EthType where
+    show (EthType t) = printf "%04X" t
 
 data Ethernet = Ethernet {
     dst   :: MACAddr,
@@ -55,5 +63,15 @@ instance Storable Ethernet where
         d <- peek $ castPtr p
         s <- peek $ castPtr $ p `plusPtr` sizeMACAddr
         t <- peek $ castPtr $ p `plusPtr` sizeMACAddr `plusPtr` sizeMACAddr
-        return $ Ethernet { dst = d, src = s, etype = t }
+        return $ Ethernet { dst = d, src = s,
+                            etype = EthType . ntohs . unEthType $ t }
 
+-- ntohl :: Word32 -> Word32
+-- htonl :: Word32 -> Word32
+ntohs :: Word16 -> Word16
+ntohs w = let b0 = shiftR (0xFF00 .&. w) 8
+              b1 = shiftL (0x00FF .&. w) 8
+          in  b0 .|. b1
+          
+htons :: Word16 -> Word16
+htons = ntohs
