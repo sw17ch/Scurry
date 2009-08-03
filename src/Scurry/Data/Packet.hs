@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Scurry.NetworkData (
+module Scurry.Data.Packet (
     MACAddr,
     mkMACAddr,
     unMACAddr,
