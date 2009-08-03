@@ -16,14 +16,12 @@ data EthType = ET_IP    -- 0800
     deriving (Show,Eq)
 
 instance Enum EthType where
-    fromEnum e | e == ET_IP   = 0x0800
-               | e == ET_ARP  = 0x0806
-               | e == ET_IPX  = 0x8037
-               | e == ET_IPv6 = 0x86DD
-               | e == ET_LLDP = 0x88CC
-               | otherwise    = case e of
-                                    (ET_Other w) -> fromIntegral w
-                                    _ -> error "Unknown EthType"
+    fromEnum ET_IP   = 0x0800
+    fromEnum ET_ARP  = 0x0806
+    fromEnum ET_IPX  = 0x8037
+    fromEnum ET_IPv6 = 0x86DD
+    fromEnum ET_LLDP = 0x88CC
+    fromEnum (ET_Other w) = fromIntegral w
 
     toEnum 0x0800 = ET_IP
     toEnum 0x0806 = ET_ARP
