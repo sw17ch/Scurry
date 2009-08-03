@@ -30,9 +30,12 @@ import Foreign.C.String
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Data.Word
 
 import Control.Monad
+
+import Scurry.NetworkData
 
 -- A TAP device desciptor
 newtype TAP = TAP (Ptr TAPDesc)
@@ -46,13 +49,15 @@ newtype LocalPKT = LocalPKT (ForeignPtr TAPPacket)
 newtype RemotePKT = RemotePKT (ForeignPtr TAPPacket)
     deriving (Show)
 
-newtype MACAddr = MACAddr [Word8]
-    deriving (Show)
+class Frame a where
+    fromFrame :: a -> IO Ethernet
+    toFrame   :: Ethernet -> IO a
 
-mkMACAddr :: [Word8] -> MACAddr
-mkMACAddr m = case length m of
-                   6 -> MACAddr m
-                   _ -> error "A MACAddr is 6 bytes! No more! No less!"
+instance Frame LocalPKT where
+    fromFrame (LocalPKT p) = withForeignPtr p $ peek . castPtr
+    toFrame e = do p <- mallocForeignPtrBytes $ sizeOf (undefined :: Ethernet) 
+                   withForeignPtr p $ \p' -> poke (castPtr p') e
+                   return $ LocalPKT p
 
 maxPktSize :: Int
 maxPktSize = 1560
@@ -171,7 +176,10 @@ test = withTAP 1200 $ \d -> do
 
     getMAC d >>= print
 
-    forever $ readTAP d
+    forever $ do 
+        (l,p) <- readTAP d
+        e <- fromFrame p
+        print (l,e)
 
     return ()
 

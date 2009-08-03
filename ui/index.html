@@ -12,4 +12,9 @@
         <ul id="status">
         </ul>
     </body>
+    <script type="text/javascript">
+    $.postJSON("/cmd","", function (a1,a2) {
+        alert(a1.bindPort);
+    });
+    </script>
 </html>

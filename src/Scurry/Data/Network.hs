@@ -3,6 +3,8 @@ module Scurry.Data.Network (
     IPV4Addr,
     IPPort(..),
     VPNAddr,
+    HWAddr,
+    mkHWAddr,
     inet_ntoa,
     inet_addr,
 
@@ -26,6 +28,13 @@ import Network.Socket hiding (send, sendTo,
 newtype IPV4Addr = MkIPV4Addr HostAddress deriving (Data,Typeable)
 newtype IPPort   = MkIPPort   Word16      deriving (Data,Typeable)
 newtype VPNAddr  = MkVPNAddr  IPV4Addr    deriving (Data,Typeable)
+
+newtype HWAddr   = MkHWAddr [Word8]       deriving (Data,Typeable)
+
+mkHWAddr :: [Word8] -> Maybe HWAddr
+mkHWAddr adr = if length adr == 8
+                then Just . MkHWAddr $ adr
+                else Nothing
 
 inet_addr :: String -> Maybe IPV4Addr
 inet_addr = unsafePerformIO . catchToMaybe . mk

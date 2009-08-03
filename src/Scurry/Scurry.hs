@@ -6,7 +6,6 @@ module Scurry.Scurry (
 
 import Scurry.Data.Network
 
-import Data.Data
 import Text.JSON.Generic
 
 data Scurry = Scurry {
