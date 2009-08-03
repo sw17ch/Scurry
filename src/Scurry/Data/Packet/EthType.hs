@@ -8,11 +8,11 @@ import Foreign.Ptr
 import Scurry.Network.Util
 
 data EthType = ET_IP    -- 0800
-               | ET_ARP   -- 0806
-               | ET_IPX   -- 8037
-               | ET_IPv6  -- 86DD
-               | ET_LLDP  -- 88CC
-               | ET_Other Word16
+             | ET_ARP   -- 0806
+             | ET_IPX   -- 8037
+             | ET_IPv6  -- 86DD
+             | ET_LLDP  -- 88CC
+             | ET_Other Word16
     deriving (Show,Eq)
 
 instance Enum EthType where
