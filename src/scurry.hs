@@ -4,6 +4,7 @@ import Scurry.Scurry
 import Scurry.Data.Network
 import Scurry.UI
 import Scurry.Exception
+import Scurry.TAPSrc
 
 import Control.Concurrent
 import Control.Concurrent.MVar
@@ -61,15 +62,17 @@ begin m = do
     -- the process.
     cleanup <- newEmptyMVar
 
-    ui_t <- forkIO $ ui m cleanup
+    ui_t  <- forkIO $ ui          m cleanup
+    tap_t <- forkIO $ readTAPTask m cleanup
 
     takeMVar cleanup
 
     -- Inform the UI thread that we're cleaning up
-    throwTo ui_t TearDown
+    throwTo ui_t  TearDown
+    throwTo tap_t TearDown
 
     -- Wait 5 seconds for everything to clean up
-    threadDelay (5 * 1000000)
+    threadDelay (10 * 1000000)
 
     -- Done!
 
