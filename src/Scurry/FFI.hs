@@ -35,7 +35,7 @@ import Data.Word
 
 import Control.Monad
 
-import Scurry.NetworkData
+import Scurry.Data.Packet
 
 -- A TAP device desciptor
 newtype TAP = TAP (Ptr TAPDesc)
