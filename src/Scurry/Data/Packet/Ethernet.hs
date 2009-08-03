@@ -22,7 +22,6 @@ import Data.Word
 import Data.List
 import Text.Printf
 
-import Scurry.Network.Util
 import Scurry.Data.Packet.EthType
 
 data TAPPacket
