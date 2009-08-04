@@ -12,6 +12,8 @@ module Scurry.Data.Packet.Ethernet (
     RemotePKT(..),
     EthernetFrame,
     EthFrame(..),
+    Framed(..),
+    Packet(..),
 ) where
 
 import Foreign.Storable
@@ -66,7 +68,10 @@ class EthFrame a where
 -- |Something that is Framed can be possibly be pulled out
 -- of an ethernet frame.
 class Framed a where
-    unframe :: ForeignPtr EthernetFrame -> IO (Maybe a)
+    unframe :: (Packet p) => p -> IO (Maybe a)
+
+class Packet a where
+    unpacket :: a -> ForeignPtr EthernetFrame
 
 ------------------------
 -- Explicit instances --
@@ -79,6 +84,12 @@ instance EthFrame LocalPKT where
     toFrame e = do p <- mallocForeignPtrBytes $ sizeOf (undefined :: Ethernet) 
                    withForeignPtr p $ \p' -> poke (castPtr p') e
                    return $ LocalPKT p
+
+instance Packet LocalPKT where
+    unpacket (LocalPKT p) = p
+
+instance Framed Ethernet where
+    unframe p = withForeignPtr (unpacket p) (peek . castPtr) >>= (return . Just)
 
 instance Show MACAddr where
     show (MACAddr m) = concat $ intersperse ":" $ map (printf "%02X") m
