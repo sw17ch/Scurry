@@ -144,10 +144,10 @@ foreign import CALLCONV "help.h set_mask" set_mask_ffi :: (Ptr TAPDesc) -> CUInt
 foreign import CALLCONV "help.h get_mac" get_mac_ffi :: (Ptr TAPDesc) -> (Ptr CUChar) -> IO CInt
 
 -- int32_t read_tap(tap_desc_t * td, int8_t * buf, int32_t len)
-foreign import CALLCONV "help.h read_tap" read_tap_ffi :: (Ptr TAPDesc) -> (Ptr TAPPacket) -> CInt -> IO CInt
+foreign import CALLCONV "help.h read_tap" read_tap_ffi :: (Ptr TAPDesc) -> (Ptr EthernetFrame) -> CInt -> IO CInt
 
 -- int32_t write_tap(tap_desc_t * td, const int8_t * buf, int32_t len)
-foreign import CALLCONV "help.h write_tap" write_tap_ffi :: (Ptr TAPDesc) -> (Ptr TAPPacket) -> CInt -> IO CInt
+foreign import CALLCONV "help.h write_tap" write_tap_ffi :: (Ptr TAPDesc) -> (Ptr EthernetFrame) -> CInt -> IO CInt
 
 test :: IO ()
 test = withTAP 1200 $ \d -> do

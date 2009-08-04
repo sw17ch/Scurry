@@ -10,8 +10,8 @@ module Scurry.Data.Packet.Ethernet (
 
     LocalPKT(..),
     RemotePKT(..),
-    TAPPacket,
-    Frame(..),
+    EthernetFrame,
+    EthFrame(..),
 ) where
 
 import Foreign.Storable
@@ -24,13 +24,13 @@ import Text.Printf
 
 import Scurry.Data.Packet.EthType
 
-data TAPPacket
+data EthernetFrame
 
 -- Read from a TAP device
-newtype LocalPKT  = LocalPKT  (ForeignPtr TAPPacket) deriving (Show)
+newtype LocalPKT  = LocalPKT  (ForeignPtr EthernetFrame) deriving (Show)
 
 -- Read from a Socket
-newtype RemotePKT = RemotePKT (ForeignPtr TAPPacket) deriving (Show)
+newtype RemotePKT = RemotePKT (ForeignPtr EthernetFrame) deriving (Show)
 
 -- | A MACAddr is a hardware address 48 bits long.
 newtype MACAddr = MACAddr [Word8]
@@ -48,7 +48,6 @@ unMACAddr (MACAddr m) = m
 -- | Ethernet is an ethernet header. This consists of the first 92 bytes of
 -- any ethernet packet.
 data Ethernet = Ethernet {
-    ptr   :: ForeignPtr Ethernet,
     dst   :: MACAddr,
     src   :: MACAddr,
     etype :: EthType
@@ -60,18 +59,21 @@ data Ethernet = Ethernet {
 
 -- |Provides methods from converting between Ethernet messages
 -- and a distinct packet storage format.
-class Frame a where
+class EthFrame a where
     fromFrame :: a -> IO Ethernet
     toFrame   :: Ethernet -> IO a
+
+-- |Something that is Framed can be possibly be pulled out
+-- of an ethernet frame.
+class Framed a where
+    unframe :: ForeignPtr EthernetFrame -> IO (Maybe a)
 
 ------------------------
 -- Explicit instances --
 ------------------------
-instance Frame LocalPKT where
+instance EthFrame LocalPKT where
     -- fromFrame :: LocalPKT -> IO Ethernet
-    fromFrame (LocalPKT p) = do
-        e <- withForeignPtr p $ peek . castPtr
-        return (e {ptr = castForeignPtr p})
+    fromFrame (LocalPKT p) = withForeignPtr p $ peek . castPtr
 
     -- toFrame :: Ethernet -> IO LocalPKT
     toFrame e = do p <- mallocForeignPtrBytes $ sizeOf (undefined :: Ethernet) 
@@ -98,5 +100,4 @@ instance Storable Ethernet where
         d <- peek $ castPtr p
         s <- peek $ castPtr $ p `plusPtr` sizeMACAddr
         t <- peek $ castPtr $ p `plusPtr` sizeMACAddr `plusPtr` sizeMACAddr
-        return $ Ethernet { ptr = undefined, dst = d, src = s,
-                            etype = t }
+        return $ Ethernet { dst = d, src = s, etype = t }
