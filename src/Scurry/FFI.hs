@@ -157,9 +157,9 @@ test = withTAP 1200 $ \d -> do
     getMAC d >>= print
 
     forever $ do 
-        (l,p) <- readTAP d
-        e <- fromFrame p
-        print (l,e)
+        (_,p) <- readTAP d
+        (unframe p :: IO (Maybe Ethernet)) >>= print
+        (unframe p :: IO (Maybe IPv4)) >>= print
 
     return ()
 
