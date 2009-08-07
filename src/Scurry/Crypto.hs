@@ -2,10 +2,14 @@ module Scurry.Crypto (
     getRSAKey
 ) where
 
+import Control.Monad
+import Data.Maybe
 import System.Directory
+
 import OpenSSL.RSA
 import OpenSSL.PEM
 import OpenSSL.EVP.PKey
+import OpenSSL.EVP.Cipher
 
 import Scurry.Config
 
@@ -19,10 +23,14 @@ getRSAKey = do
     pube <- doesFileExist pub
     prve <- doesFileExist prv
 
+    c <- liftM fromJust $ getCipherByName "AES256-SHA"
+
     case pube && prve of
          True  -> do
-                (Just k) <- openRSAKey pub prv
-                return k
+                k <- openRSAKey pub prv
+                case k of
+                    Nothing   -> error $ "Not a private RSA key: " ++ prv
+                    (Just k') -> return k'
 
          False -> do
                 k <- generateRSAKey' 2048 65537
