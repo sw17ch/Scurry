@@ -5,6 +5,7 @@ import Scurry.Data.Network
 import Scurry.UI
 import Scurry.Exception
 import Scurry.TAPSrc
+import Scurry.Crypto
 
 import Control.Concurrent
 import Control.Concurrent.MVar
@@ -81,6 +82,8 @@ main = withSocketsDo $ do
     putStrLn "Scurry 0.1.0"
 
     m <- newEmptyMVar
+
+    getRSAKey
 
     args <- getArgs
     case parseOpts args of
