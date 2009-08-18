@@ -1,5 +1,9 @@
 module Scurry.Crypto (
-    getRSAKey
+    getRSAKey,
+    encryptBlk,
+    SomePublicKey,
+    EncKey, -- |Encrypted Key
+    EncBlkInfo,
 ) where
 
 import Control.Monad
@@ -10,8 +14,30 @@ import OpenSSL.RSA
 import OpenSSL.PEM
 import OpenSSL.EVP.PKey
 import OpenSSL.EVP.Cipher
+import OpenSSL.EVP.Seal
 
 import Scurry.Config
+
+import Data.ByteString hiding (map,readFile,writeFile)
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as C
+
+newtype EncKey = EncKey ByteString
+newtype InitVector = IV ByteString
+
+data EncBlkInfo = EncBlkInfo {
+    message :: ByteString,
+    keys :: [EncKey],
+    ivec :: InitVector
+}
+
+encryptBlk :: ByteString -> [SomePublicKey] -> IO EncBlkInfo
+encryptBlk msg pks = do
+    c <- liftM fromJust $ getCipherByName "AES256-SHA"
+    (msg', eks, iv) <- sealBS c pks msg
+    return $ EncBlkInfo { message = msg',
+                          keys = map (EncKey . C.pack) eks,
+                          ivec = IV . C.pack $ iv }
 
 getRSAKey :: IO RSAKeyPair
 getRSAKey = do
@@ -22,8 +48,6 @@ getRSAKey = do
 
     pube <- doesFileExist pub
     prve <- doesFileExist prv
-
-    c <- liftM fromJust $ getCipherByName "AES256-SHA"
 
     case pube && prve of
          True  -> do
