@@ -31,12 +31,16 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Data.Word
+import Data.ByteString.Lazy hiding (map)
+import Data.ByteString.Internal
+import qualified Data.ByteString as S
 
 import Control.Monad
 
 import Scurry.Data.Packet
 
 data TAPDesc
+data EthernetFrame
 
 -- A TAP device desciptor
 newtype TAP = TAP (Ptr TAPDesc)
@@ -84,18 +88,25 @@ getMAC (TAP p) = allocaArray 6 g
                    peekArray 6 m >>= (return . mkMACAddr . (map fromIntegral))
 
 -- |Read a packet from the TAP device
-readTAP :: TAP -> IO (CInt,LocalPKT)
-readTAP (TAP p) = do
+readTAP :: TAP -> IO LocalPKT
+readTAP (TAP t) = do
     pkt <- mallocForeignPtrBytes maxPktSize
     len <- withForeignPtr pkt $ \pkt' -> do
-        read_tap_ffi p pkt' (fromIntegral maxPktSize)
-    return (len,LocalPKT pkt)
+        read_tap_ffi t pkt' (fromIntegral maxPktSize)
+    return $ mk pkt len
+    where mk p l = let p' = castForeignPtr p
+                       l' = fromIntegral l
+                   in LocalPKT $ fromChunks $ [fromForeignPtr p' 0 l']
 
 -- |Write a packet to the TAP device
-writeTAP :: TAP -> RemotePKT -> Int -> IO CInt
-writeTAP (TAP p) (RemotePKT pkt) len = withForeignPtr pkt $ \pkt' -> do
-    wlen <- write_tap_ffi p pkt' (fromIntegral len)
+writeTAP :: TAP -> RemotePKT -> IO CInt
+writeTAP (TAP t) (RemotePKT p) = withForeignPtr pkt $ \pkt' -> do
+    wlen <- write_tap_ffi t pkt' (fromIntegral len)
     return wlen
+    where (pkt,len) = let (p',o,l) = toForeignPtr (S.concat . toChunks $ p)
+                      in case o of
+                              0 -> error $ "Got an offset of " ++ show o
+                              _ -> (castForeignPtr p',l)
 
 -- Some bracketing functions
     
@@ -156,10 +167,7 @@ test = withTAP 1200 $ \d -> do
 
     getMAC d >>= print
 
-    forever $ do 
-        (_,p) <- readTAP d
-        (unframe p :: IO (Maybe Ethernet)) >>= print
-        (unframe p :: IO (Maybe IPv4)) >>= print
+    forever $ readTAP d >>= (print . parsePkt)
 
     return ()
 

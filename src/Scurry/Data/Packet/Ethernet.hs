@@ -10,29 +10,27 @@ module Scurry.Data.Packet.Ethernet (
 
     LocalPKT(..),
     RemotePKT(..),
-    EthernetFrame,
     EthFrame(..),
-    Framed(..),
-    Packet(..),
 ) where
 
 import Foreign.Storable
 import Foreign.Marshal.Array
 import Foreign.Ptr
-import Foreign.ForeignPtr
-import Data.Word
-import Data.List
+import Data.Binary
+
+import Data.List (intersperse)
+import Data.ByteString.Lazy hiding (length, concat, map, intersperse,
+                                    take, repeat, zipWith)
+import qualified Data.ByteString.Lazy as B
 import Text.Printf
 
 import Scurry.Data.Packet.EthType
 
-data EthernetFrame
-
 -- Read from a TAP device
-newtype LocalPKT  = LocalPKT  (ForeignPtr EthernetFrame) deriving (Show)
+newtype LocalPKT  = LocalPKT  ByteString deriving (Show)
 
 -- Read from a Socket
-newtype RemotePKT = RemotePKT (ForeignPtr EthernetFrame) deriving (Show)
+newtype RemotePKT = RemotePKT ByteString deriving (Show)
 
 -- | A MACAddr is a hardware address 48 bits long.
 newtype MACAddr = MACAddr [Word8]
@@ -62,34 +60,18 @@ data Ethernet = Ethernet {
 -- |Provides methods from converting between Ethernet messages
 -- and a distinct packet storage format.
 class EthFrame a where
-    fromFrame :: a -> IO Ethernet
-    toFrame   :: Ethernet -> IO a
-
--- |Something that is Framed can be possibly be pulled out
--- of an ethernet frame.
-class Framed a where
-    unframe :: (Packet p) => p -> IO (Maybe a)
-
-class Packet a where
-    unpacket :: a -> ForeignPtr EthernetFrame
+    fromFrame :: a -> Ethernet
+    toFrame   :: Ethernet -> a
 
 ------------------------
 -- Explicit instances --
 ------------------------
 instance EthFrame LocalPKT where
     -- fromFrame :: LocalPKT -> IO Ethernet
-    fromFrame (LocalPKT p) = withForeignPtr p $ peek . castPtr
+    fromFrame (LocalPKT p) = decode p
 
     -- toFrame :: Ethernet -> IO LocalPKT
-    toFrame e = do p <- mallocForeignPtrBytes $ sizeOf (undefined :: Ethernet) 
-                   withForeignPtr p $ \p' -> poke (castPtr p') e
-                   return $ LocalPKT p
-
-instance Packet LocalPKT where
-    unpacket (LocalPKT p) = p
-
-instance Framed Ethernet where
-    unframe p = withForeignPtr (unpacket p) (peek . castPtr) >>= (return . Just)
+    toFrame = LocalPKT . encode
 
 instance Show MACAddr where
     show (MACAddr m) = concat $ intersperse ":" $ map (printf "%02X") m
@@ -112,3 +94,19 @@ instance Storable Ethernet where
         s <- peek $ castPtr $ p `plusPtr` sizeMACAddr
         t <- peek $ castPtr $ p `plusPtr` sizeMACAddr `plusPtr` sizeMACAddr
         return $ Ethernet { dst = d, src = s, etype = t }
+
+instance Binary MACAddr where
+    get = (sequence gs) >>= return . mkMACAddr
+        where gs = take 6 $ repeat get
+    put (MACAddr m) = sequence_ $ zipWith ($) (repeat put) m
+
+instance Binary Ethernet where
+    get = do
+        d <- get
+        s <- get
+        t <- get
+        return $ Ethernet {dst = d, src = s, etype = t }
+    put e = do
+        put $ dst   e
+        put $ src   e
+        put $ etype e

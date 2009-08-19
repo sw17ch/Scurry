@@ -2,10 +2,10 @@ module Scurry.Data.Packet.EthType (
     EthType(..),
 ) where
 
-import Data.Word
 import Foreign.Storable
 import Foreign.Ptr
 import Scurry.Network.Util
+import Data.Binary
 
 data EthType = ET_IP    -- 0800
              | ET_ARP   -- 0806
@@ -37,3 +37,12 @@ instance Storable EthType where
         where p' = castPtr p :: Ptr Word16
     poke p t    = poke p' (htons . fromIntegral . fromEnum $ t)
         where p' = castPtr p :: Ptr Word16
+
+instance Binary EthType where
+    get = do
+        t <- get :: Get Word16
+        return . toEnum . fromIntegral $ t
+    put t = do
+        let t'  = fromEnum t
+            t'' = fromIntegral t' :: Word16
+        put t''
