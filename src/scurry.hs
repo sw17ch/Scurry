@@ -6,6 +6,7 @@ import Scurry.UI
 import Scurry.Exception
 import Scurry.TAPSrc
 import Scurry.Crypto
+import Scurry.NetReader
 
 import Control.Concurrent
 import Control.Concurrent.MVar
