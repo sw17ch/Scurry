@@ -21,8 +21,6 @@ module Scurry.FFI (
     writeTAP,
 
     withTAP,
-
-    test,
 ) where
 
 import Foreign.C.Types
@@ -159,15 +157,3 @@ foreign import CALLCONV "help.h read_tap" read_tap_ffi :: (Ptr TAPDesc) -> (Ptr 
 
 -- int32_t write_tap(tap_desc_t * td, const int8_t * buf, int32_t len)
 foreign import CALLCONV "help.h write_tap" write_tap_ffi :: (Ptr TAPDesc) -> (Ptr EthernetFrame) -> CInt -> IO CInt
-
-test :: IO ()
-test = withTAP 1200 $ \d -> do
-    setIP d 0x0100000A   -- 10.0.0.1
-    setMask d 0x00FFFFFF -- 255.255.255.0
-
-    getMAC d >>= print
-
-    forever $ readTAP d >>= (print . parsePkt)
-
-    return ()
-
