@@ -1,7 +1,7 @@
 module Scurry.Crypto (
     getRSAKey,
     encryptBlk,
-    SomePublicKey,
+    ScurryPubKey,
     EncKey, -- |Encrypted Key
     EncBlkInfo,
 ) where
@@ -18,23 +18,26 @@ import OpenSSL.EVP.Seal
 
 import Scurry.Config
 
-import Data.ByteString hiding (map,readFile,writeFile)
-import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as C
 
-newtype EncKey = EncKey ByteString
-newtype InitVector = IV ByteString
+newtype EncKey = EncKey C.ByteString
+newtype InitVector = IV C.ByteString
+
+newtype ScurryPubKey = ScurryPubKey { unScurryPubKey :: SomePublicKey }
+
+instance Show ScurryPubKey where
+    show _ = "ScurryPubKey"
 
 data EncBlkInfo = EncBlkInfo {
-    message :: ByteString,
+    message :: C.ByteString,
     keys :: [EncKey],
     ivec :: InitVector
 }
 
-encryptBlk :: ByteString -> [SomePublicKey] -> IO EncBlkInfo
+encryptBlk :: C.ByteString -> [ScurryPubKey] -> IO EncBlkInfo
 encryptBlk msg pks = do
     c <- liftM fromJust $ getCipherByName "AES256-SHA"
-    (msg', eks, iv) <- sealBS c pks msg
+    (msg', eks, iv) <- sealBS c (map unScurryPubKey pks) msg
     return $ EncBlkInfo { message = msg',
                           keys = map (EncKey . C.pack) eks,
                           ivec = IV . C.pack $ iv }
