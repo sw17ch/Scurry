@@ -1,5 +1,6 @@
-module Scurry.NetReader (
+module Scurry.NetTask (
     NetMsg(..),
+    netTask,
 ) where
 
 import Control.Concurrent.MVar
@@ -15,5 +16,5 @@ data NetMsg = Reject
             | EncMsg { msg :: ByteString }
     deriving (Show)
 
-netTask :: MVar Scurry -> IO ()
-netTask s = forever $ return ()
+netTask :: MVar Scurry -> MVar () -> IO ()
+netTask s c = forever $ return ()
