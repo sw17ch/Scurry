@@ -22,13 +22,14 @@ begin s = do
     net_t <- forkIO $ netTask scurry cleanup
 
     -- When we pass this, some one triggered a cleanup
-    readMVar cleanup
+    -- readMVar cleanup
+    threadDelay (5 * 1000000)
 
+    throwTo net_t TearDown
     throwTo ui_t  TearDown
     throwTo tap_t TearDown
-    throwTo net_t TearDown
 
-    -- Wait 10 seconds for everything to clean up
-    threadDelay (10 * 1000000)
+    -- Wait 1 second for everything to clean up
+    threadDelay (1 * 1000000)
 
     -- Done!

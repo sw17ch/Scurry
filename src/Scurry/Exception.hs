@@ -4,7 +4,8 @@ module Scurry.Exception (
 ) where
 
 import Data.Data
-import Control.Exception.Base
+import Control.Exception
+-- import Control.Exception.Base
 
 data ScurryException = TearDown
     deriving (Show,Typeable)
