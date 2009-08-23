@@ -18,9 +18,10 @@ import Scurry.Scurry
 data NetMsg = Reject
             | Join   { key :: ScurryPubKey }
             | Accept { key :: ScurryPubKey }
-            | EncMsg { msg :: B.ByteString   }
+            | EncMsg { msg :: B.ByteString }
     deriving (Show)
 
+delayOneSec :: IO ()
 delayOneSec = threadDelay (1 * 1000000)
 
 -- | Kicks off read/write tasks on a socket
