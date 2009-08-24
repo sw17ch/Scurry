@@ -12,7 +12,6 @@ import Control.Monad
 import qualified Data.ByteString.Lazy as B
 
 import Scurry.Crypto
-import Scurry.Exception
 import Scurry.Scurry
 
 data NetMsg = Reject
@@ -21,16 +20,19 @@ data NetMsg = Reject
             | EncMsg { msg :: B.ByteString }
     deriving (Show)
 
+netDbg :: String -> IO ()
+netDbg = putStrLn
+
 delayOneSec :: IO ()
 delayOneSec = threadDelay (1 * 1000000)
 
 -- | Kicks off read/write tasks on a socket
 netTask :: MVar Scurry -> MVar () -> IO ()
-netTask s c = do
+netTask s _ = do
     (r,w) <- spawn
     catch (forever idle) $ \e -> do
         let err = show (e :: SomeException)
-        putStrLn $ "netTask: " ++ err
+        netDbg $ "netTask: " ++ err
         throwTo r e
         throwTo w e
     where
@@ -40,28 +42,28 @@ netTask s c = do
             return (r,w)
         idle = do
             delayOneSec
-            putStrLn "netTask: tick"
+            netDbg "netTask: tick"
 
 netRead :: MVar Scurry -> IO ()
-netRead s = genericCatch "netRead" task
+netRead _ = genericCatch "netRead" task
     where
         task = forever $ idle
         idle = do
             delayOneSec
-            putStrLn "netRead: tick"
+            netDbg "netRead: tick"
 
 netWrite :: MVar Scurry -> IO ()
-netWrite s = genericCatch "netWrite" task
+netWrite _ = genericCatch "netWrite" task
     where
         task = forever $ idle
         idle = do
             delayOneSec
-            putStrLn "netWrite: tick"
+            netDbg "netWrite: tick"
 
 genericCatch :: String -> IO () -> IO ()
-genericCatch id a = do
-    catch a (gc id)
+genericCatch ident a = do
+    catch a (gc ident)
     where
         gc i e = do
             let err = show (e :: SomeException)
-            putStrLn $ i ++ ": " ++ err
+            netDbg $ i ++ ": " ++ err
