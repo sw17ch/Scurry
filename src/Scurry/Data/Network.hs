@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable, CPP, ForeignFunctionInterface #-}
 module Scurry.Data.Network (
-    IPV4Addr,
+    IPV4Addr(unIPV4Addr),
     IPPort(..),
     VPNAddr,
     HWAddr,
@@ -8,7 +8,7 @@ module Scurry.Data.Network (
     inet_ntoa,
     inet_addr,
 
-    module Network.Socket,
+    withSocketsDo, -- Network.Socket
 ) where
 
 import Data.Data
@@ -25,11 +25,11 @@ import Network.Socket hiding (send, sendTo,
                               inet_addr, inet_ntoa)
 -- import Network.Socket.ByteString
 
-newtype IPV4Addr = MkIPV4Addr HostAddress deriving (Data,Typeable)
-newtype IPPort   = MkIPPort   Word16      deriving (Data,Typeable)
-newtype VPNAddr  = MkVPNAddr  IPV4Addr    deriving (Data,Typeable)
+newtype IPV4Addr = MkIPV4Addr { unIPV4Addr :: HostAddress } deriving (Data,Typeable)
+newtype IPPort   = MkIPPort   { unIPPort :: Word16 }        deriving (Data,Typeable)
+newtype VPNAddr  = MkVPNAddr  IPV4Addr                      deriving (Data,Typeable)
 
-newtype HWAddr   = MkHWAddr [Word8]       deriving (Data,Typeable)
+newtype HWAddr   = MkHWAddr [Word8]                         deriving (Data,Typeable)
 
 mkHWAddr :: [Word8] -> Maybe HWAddr
 mkHWAddr adr = if length adr == 8
