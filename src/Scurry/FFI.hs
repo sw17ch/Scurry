@@ -34,6 +34,7 @@ import Data.ByteString.Internal
 import qualified Data.ByteString as S
 
 import Control.Monad
+import Control.Exception
 
 import Scurry.Data.Packet
 
@@ -89,12 +90,18 @@ getMAC (TAP p) = allocaArray 6 g
 readTAP :: TAP -> IO LocalPKT
 readTAP (TAP t) = do
     pkt <- mallocForeignPtrBytes maxPktSize
-    len <- withForeignPtr pkt $ \pkt' -> do
-        read_tap_ffi t pkt' (fromIntegral maxPktSize)
+    len <- go pkt
     return $ mk pkt len
-    where mk p l = let p' = castForeignPtr p
+    where 
+          go pkt = do
+            len <- block $ withForeignPtr pkt $ \pkt' -> read_tap_ffi t pkt' mps
+            case len of
+                0 -> go pkt
+                _ -> return len
+          mk p l = let p' = castForeignPtr p
                        l' = fromIntegral l
                    in LocalPKT $ fromChunks $ [fromForeignPtr p' 0 l']
+          mps = fromIntegral maxPktSize
 
 -- |Write a packet to the TAP device
 writeTAP :: TAP -> RemotePKT -> IO CInt
@@ -126,34 +133,34 @@ withTAP m a = do
 
 
 -- tap_desc_t * init_tap();
-foreign import CALLCONV "help.h init_tap" init_tap_ffi :: IO (Ptr TAPDesc)
+foreign import CALLCONV safe "help.h init_tap" init_tap_ffi :: IO (Ptr TAPDesc)
 
 -- void finish_tap(tap_desc_t * td);
-foreign import CALLCONV "help.h finish_tap" finish_tap_ffi   :: (Ptr TAPDesc) -> IO CInt
+foreign import CALLCONV safe "help.h finish_tap" finish_tap_ffi   :: (Ptr TAPDesc) -> IO CInt
 
 -- int32_t open_tap(tap_desc_t * td);
-foreign import CALLCONV "help.h open_tap" open_tap_ffi :: (Ptr TAPDesc) -> CString -> IO CInt
+foreign import CALLCONV safe "help.h open_tap" open_tap_ffi :: (Ptr TAPDesc) -> CString -> IO CInt
 
 -- int32_t close_tap(tap_desc_t * td);
-foreign import CALLCONV "help.h close_tap" close_tap_ffi :: (Ptr TAPDesc) -> IO CInt
+foreign import CALLCONV safe "help.h close_tap" close_tap_ffi :: (Ptr TAPDesc) -> IO CInt
 
 -- int32_t bring_up_tap(tap_desc_t * td);
-foreign import CALLCONV "help.h bring_up_tap" bring_up_tap_ffi :: (Ptr TAPDesc) -> IO CInt
+foreign import CALLCONV safe "help.h bring_up_tap" bring_up_tap_ffi :: (Ptr TAPDesc) -> IO CInt
 
 -- int32_t set_mtu(tap_desc_t * td, uint32_t mtu);
-foreign import CALLCONV "help.h set_mtu" set_mtu_ffi :: (Ptr TAPDesc) -> CUInt -> IO CInt
+foreign import CALLCONV safe "help.h set_mtu" set_mtu_ffi :: (Ptr TAPDesc) -> CUInt -> IO CInt
 
 -- int32_t set_ip(tap_desc_t * td, uint32_t ip);
-foreign import CALLCONV "help.h set_ip" set_ip_ffi :: (Ptr TAPDesc) -> CUInt -> IO CInt
+foreign import CALLCONV safe "help.h set_ip" set_ip_ffi :: (Ptr TAPDesc) -> CUInt -> IO CInt
 
 -- int32_t set_mask(tap_desc_t * td, uint32_t mask);
-foreign import CALLCONV "help.h set_mask" set_mask_ffi :: (Ptr TAPDesc) -> CUInt -> IO CInt
+foreign import CALLCONV safe "help.h set_mask" set_mask_ffi :: (Ptr TAPDesc) -> CUInt -> IO CInt
 
 -- int32_t get_mac(tap_desc_t * td, MACAddr mac);
-foreign import CALLCONV "help.h get_mac" get_mac_ffi :: (Ptr TAPDesc) -> (Ptr CUChar) -> IO CInt
+foreign import CALLCONV safe "help.h get_mac" get_mac_ffi :: (Ptr TAPDesc) -> (Ptr CUChar) -> IO CInt
 
 -- int32_t read_tap(tap_desc_t * td, int8_t * buf, int32_t len)
-foreign import CALLCONV "help.h read_tap" read_tap_ffi :: (Ptr TAPDesc) -> (Ptr EthernetFrame) -> CInt -> IO CInt
+foreign import CALLCONV safe "help.h read_tap" read_tap_ffi :: (Ptr TAPDesc) -> (Ptr EthernetFrame) -> CInt -> IO CInt
 
 -- int32_t write_tap(tap_desc_t * td, const int8_t * buf, int32_t len)
-foreign import CALLCONV "help.h write_tap" write_tap_ffi :: (Ptr TAPDesc) -> (Ptr EthernetFrame) -> CInt -> IO CInt
+foreign import CALLCONV safe "help.h write_tap" write_tap_ffi :: (Ptr TAPDesc) -> (Ptr EthernetFrame) -> CInt -> IO CInt

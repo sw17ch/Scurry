@@ -25,11 +25,26 @@ begin s = do
     -- readMVar cleanup
     threadDelay (5 * 1000000)
 
+    putStrLn "Tear down NetTask..."
     throwTo net_t TearDown
+
+    putStrLn "Tear down UI..."
     throwTo ui_t  TearDown
-    throwTo tap_t TearDown
+
+    ---- Why doesn't this work?
+    -- putStrLn "Tear down TAPTask..."
+    -- throwTo tap_t TearDown
 
     -- Wait 1 second for everything to clean up
-    threadDelay (1 * 1000000)
+    threadDelay (1 * 100000)
+
+    putStrLn "Killing NetTask..."
+    killThread net_t
+
+    putStrLn "Killing UI..."
+    killThread ui_t
+
+    putStrLn "Killing TAPTask..."
+    killThread tap_t
 
     -- Done!

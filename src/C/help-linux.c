@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <poll.h>
 
 #include <netinet/ip.h>
 
@@ -165,7 +166,31 @@ int32_t get_mac(tap_desc_t * td, MACAddr mac)
 
 int32_t read_tap(tap_desc_t * td, uint8_t * buf, int32_t len)
 {
-    return read(td->desc,buf,len);
+    struct pollfd p = { td->desc, POLLIN, 0 };
+
+    printf("read_tap...");
+    int32_t ret = poll(&p, 1, 500);
+    printf("\n");
+
+    if (ret == 0)
+    {
+        return 0;
+    }
+    else if (ret < 0)
+    {
+        fprintf(stderr, "ERROR: poll returned %d!!!\n", ret);
+        return ret;
+    }
+    else if (p.revents | POLLIN)
+    {
+        return read(td->desc,buf,len);
+    }
+    else
+    {
+        fprintf(stderr, "ERROR: poll returned, it wasn't a timout, and there "
+                        "isn't any data to be read!\n");
+        return -100;
+    }
 }
 
 int32_t write_tap(tap_desc_t * td, const uint8_t * buf, int32_t len)
