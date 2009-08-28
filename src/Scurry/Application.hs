@@ -25,20 +25,16 @@ begin s = do
     -- readMVar cleanup
     threadDelay (5 * 1000000)
 
-    putStrLn "Tear down NetTask..."
-    throwTo net_t TearDown
-
-
     putStrLn "Tear down UI..."
     throwTo ui_t  TearDown
-
 
     putStrLn "Tear down TAPTask..."
     throwTo tap_t TearDown
 
-    -- Murderous rampage time...
+    putStrLn "Tear down NetTask..."
+    throwTo net_t TearDown
 
-    threadDelay 0
+    -- Murderous rampage time...
 
     putStrLn "Killing UI..."
     killThread ui_t
@@ -48,8 +44,6 @@ begin s = do
 
     putStrLn "Killing NetTask..."
     killThread net_t
-
-    threadDelay 0
 
     -- Done!
     putStrLn "Done. Thanks for using Scurry."

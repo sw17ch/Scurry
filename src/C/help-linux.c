@@ -168,8 +168,6 @@ int32_t read_tap(tap_desc_t * td, uint8_t * buf, int32_t len)
 {
     struct pollfd p = { td->desc, POLLIN, 0 };
 
-    printf("%s\n", __FUNCTION__);
-
     int32_t ret = poll(&p, 1, 500);
 
     if (ret == 0)
