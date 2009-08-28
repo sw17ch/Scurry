@@ -28,18 +28,17 @@ begin s = do
     putStrLn "Tear down NetTask..."
     throwTo net_t TearDown
 
+
     putStrLn "Tear down UI..."
     throwTo ui_t  TearDown
 
-    ---- Why doesn't this work?
-    -- putStrLn "Tear down TAPTask..."
-    -- throwTo tap_t TearDown
 
-    -- Wait 1 second for everything to clean up
-    threadDelay (1 * 100000)
+    putStrLn "Tear down TAPTask..."
+    throwTo tap_t TearDown
 
-    putStrLn "Killing NetTask..."
-    killThread net_t
+    -- Murderous rampage time...
+
+    threadDelay 0
 
     putStrLn "Killing UI..."
     killThread ui_t
@@ -47,4 +46,11 @@ begin s = do
     putStrLn "Killing TAPTask..."
     killThread tap_t
 
+    putStrLn "Killing NetTask..."
+    killThread net_t
+
+    threadDelay 0
+
     -- Done!
+    putStrLn "Done. Thanks for using Scurry."
+

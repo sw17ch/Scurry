@@ -11,7 +11,9 @@ import Control.Exception
 import Control.Monad
 import qualified Data.ByteString.Lazy as B
 
-import Network.Socket
+import Network.Socket hiding (send, sendTo, recv, recvFrom)
+import Network.Socket.ByteString
+
 
 import Scurry.Crypto
 import Scurry.Data.Network
@@ -24,7 +26,8 @@ data NetMsg = Reject
     deriving (Show)
 
 netDbg :: String -> IO ()
-netDbg = putStrLn
+-- netDbg = putStrLn
+netDbg _ = do return ()
 
 delayOneSec :: IO ()
 delayOneSec = threadDelay (1 * 1000000)
@@ -49,12 +52,9 @@ netTask s _ = do
             netDbg "netTask: tick"
 
 netRead :: MVar Scurry -> Socket -> IO ()
-netRead _ sck = genericCatch "netRead" task
+netRead _ sck = genericCatch "netRead" (forever go)
     where
-        task = forever $ idle
-        idle = do
-            delayOneSec
-            netDbg "netRead: tick"
+        go = netDbg "netRead: read" >> recvFrom sck 1600
 
 netWrite :: MVar Scurry -> Socket -> IO ()
 netWrite _ sck = genericCatch "netWrite" task
