@@ -22,8 +22,7 @@ begin s = do
     net_t <- forkIO $ netTask scurry cleanup
 
     -- When we pass this, some one triggered a cleanup
-    -- readMVar cleanup
-    threadDelay (5 * 1000000)
+    readMVar cleanup
 
     putStrLn "Tear down UI..."
     throwTo ui_t  TearDown
