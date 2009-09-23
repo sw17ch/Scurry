@@ -14,7 +14,7 @@ data Scurry = Scurry {
     bindAddr :: IPV4Addr,
     bindPort :: IPPort,
     peerName :: String
-} deriving (Show,Data,Typeable)
+} deriving (Data,Typeable)
 
 defaultScurry :: Scurry
 defaultScurry = Scurry {
@@ -24,3 +24,23 @@ defaultScurry = Scurry {
     bindPort = read "24999",
     peerName = "Scurry Peer"
 }
+
+instance Show Scurry where
+    show s = unwords [
+            "vpnAddr:" ++ va,
+            "vpmMask:" ++ vm,
+            "bindAddr:" ++ ba,
+            "bindPort:" ++ bp,
+            "peerName:" ++ pn
+        ]
+        
+        where
+            va = case (vpnAddr s) of
+                      (Just a) -> show a
+                      Nothing  -> "Unassigned"
+            vm = case (vpnMask s) of
+                      (Just m) -> show m
+                      Nothing  -> "Unassigned"
+            ba = show $ bindAddr s
+            bp = show $ bindPort s
+            pn = peerName s 
