@@ -26,7 +26,7 @@ import qualified Data.ByteString.Char8 as C
 
 type Msg = C.ByteString
 type EncMsg = C.ByteString
-newtype EncKey = EncKey C.ByteString
+newtype EncKey = EncKey C.ByteString deriving (Show)
 newtype InitVector = IV C.ByteString
 
 newtype ScurryPubKey = ScurryPubKey { unScurryPubKey :: SomePublicKey }

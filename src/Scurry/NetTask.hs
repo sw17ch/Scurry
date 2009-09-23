@@ -20,9 +20,9 @@ import Scurry.Data.Network
 import Scurry.Scurry
 
 data NetMsg = Reject
-            | Join   { key :: ScurryPubKey }
-            | Accept { key :: ScurryPubKey }
-            | EncMsg { msg :: B.ByteString }
+            | Join    { pkey :: ScurryPubKey }
+            | Accept  { pkey :: ScurryPubKey, skey :: EncKey }
+            | EncMsg  { emsg :: B.ByteString }
     deriving (Show)
 
 netDbg :: String -> IO ()
