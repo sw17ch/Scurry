@@ -4,12 +4,16 @@ module Scurry.Crypto (
     ScurryPubKey,
     EncKey, -- |Encrypted Key
     EncBlkInfo,
+
+    encMsg,
+    decMsg,
 ) where
 
 import Control.Monad
 import Data.Maybe
 import System.Directory
 
+import OpenSSL.Random
 import OpenSSL.RSA
 import OpenSSL.PEM
 import OpenSSL.EVP.PKey
@@ -20,6 +24,8 @@ import Scurry.Config
 
 import qualified Data.ByteString.Char8 as C
 
+type Msg = C.ByteString
+type EncMsg = C.ByteString
 newtype EncKey = EncKey C.ByteString
 newtype InitVector = IV C.ByteString
 
@@ -33,6 +39,19 @@ data EncBlkInfo = EncBlkInfo {
     keys :: [EncKey],
     ivec :: InitVector
 }
+
+encMsg :: Msg -> EncKey -> IO (InitVector, EncMsg)
+encMsg m (EncKey k) = do
+    iv <- prandBytes 32
+    c <- liftM fromJust $ getCipherByName "AES256-SHA"
+    e <- cipherBS c (C.unpack k) (C.unpack iv) Encrypt m
+    return (IV iv,e)
+
+decMsg :: (InitVector, EncMsg) -> EncKey -> IO Msg
+decMsg (IV iv, e) (EncKey k) = do
+    c <- liftM fromJust $ getCipherByName "AES256-SHA"
+    m <- cipherBS c (C.unpack k) (C.unpack iv) Decrypt e
+    return m
 
 encryptBlk :: C.ByteString -> [ScurryPubKey] -> IO EncBlkInfo
 encryptBlk msg pks = do
