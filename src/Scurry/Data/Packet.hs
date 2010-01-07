@@ -4,13 +4,13 @@ module Scurry.Data.Packet (
     module Scurry.Data.Packet.IPv4,
     parsePkt,
     encodePkt,
-    Packet(..),
 ) where
 
 import Scurry.Data.Packet.Ethernet
 import Scurry.Data.Packet.IPv4
 
-import Data.ByteString.Lazy
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as L
 import Data.Binary
 import Data.Binary.Get
 import Data.Binary.Put
@@ -21,7 +21,7 @@ data Frame = Frame {
 } deriving (Show)
 
 data EthPayload = PL_IPv4  IPv4
-                | PL_Other ByteString
+                | PL_Other B.ByteString
     deriving (Show)
 
 instance Binary Frame where
@@ -29,25 +29,19 @@ instance Binary Frame where
         e <- get
         p <- case etype e of
                   ET_IP -> get >>= (return . PL_IPv4)
-                  _     -> getRemainingLazyByteString >>= (return . PL_Other)
+                  _     -> getRemainingStrict >>= (return . PL_Other)
         return $ Frame { eth = e, pl = p }
     put f = do
         put $ eth f
         case pl f of
             (PL_IPv4  i) -> put i
-            (PL_Other o) -> putLazyByteString o
+            (PL_Other o) -> putByteString o
 
-parsePkt :: (Packet p) => p -> Frame
-parsePkt = decode . unpacket
+parsePkt :: B.ByteString -> Frame
+parsePkt b = decode $ L.fromChunks [b]
 
-encodePkt :: (Packet p) => Frame -> p
-encodePkt = mkpacket . encode
+encodePkt :: Frame -> B.ByteString
+encodePkt = B.concat . L.toChunks . encode
 
-class Packet a where
-    unpacket :: a -> ByteString
-    mkpacket :: ByteString -> a
-
-instance Packet LocalPKT where
-    unpacket (LocalPKT p) = p
-    mkpacket b = LocalPKT b
-
+getRemainingStrict :: Get B.ByteString
+getRemainingStrict = remaining >>= (getBytes . fromIntegral)

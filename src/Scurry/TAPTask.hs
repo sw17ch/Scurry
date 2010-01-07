@@ -8,9 +8,10 @@ import Control.Monad
 import Control.Concurrent.MVar
 import Control.Exception
 
-import Scurry.FFI
 import Scurry.Scurry
 import Scurry.Data.Packet
+
+import Network.TUNTAP
 
 tapDbg :: String -> IO ()
 tapDbg = putStrLn
