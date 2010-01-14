@@ -37,22 +37,3 @@ executable scurry
     ghc-options:        -Wall -threaded
     main-is:            scurry.hs
     cc-options:         -Wall
-
-    if os(mingw32)
-        c-sources:          src/C/help-win.c
-        extra-libraries:    Iphlpapi, ws2_32
-        cc-options:         -D MINGW32
-        cpp-options:        -DCALLCONV=stdcall
-
-    if os(linux)
-        build-depends:      unix >= 2.3.0.0
-        c-sources:          src/C/help-linux.c
-        cc-options:         -D LINUX
-        cpp-options:        -DCALLCONV=ccall
-
-    if os(darwin) || os(freebsd)
-        build-depends:      unix >= 2.3.0.0
-        c-sources:          src/C/help-bsd.c
-        cc-options:         -D BSD
-        cpp-options:        -DCALLCONV=ccall
-
