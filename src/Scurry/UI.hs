@@ -2,6 +2,8 @@
 
 module Scurry.UI where
 
+import Data.List
+
 import Scurry.Scurry
 import Scurry.Config
 
@@ -24,57 +26,54 @@ ui mv shutdown = do
 logger :: Request -> IO ()
 logger r = print r
 
-loadUI :: IO FilePath -> IO String
-loadUI f = f >>= readFile
-
 server :: (MVar Scurry) -> Request -> IO Response
 server mv r@(Request {reqURI}) = do
     logger r
 
     case uriPath reqURI of
-        "/index"  -> loadUI uiIndex  >>= (return . htmlOK)
-        "/jquery" -> loadUI uiJQuery >>= (return . javaScriptOK)
-        "/style"  -> loadUI uiStyle  >>= (return . styleSheetOK)
-        "/script" -> loadUI uiScript >>= (return . javaScriptOK)
-        ('/':'c':'m':'d':_) -> handleCmd mv r
-        _         -> return (htmlOK "Unknown page")
+        "/" -> normal indexFile
+        other -> normal other
+
+    where
+        normal fn = do
+            f <- uiFile fn
+
+            case f of
+                (Just n) -> mkResponse n
+                Nothing -> return badResponse
+
+decideContent :: FilePath -> String
+decideContent n | ".js"   `isSuffixOf` n = "text/javascript"
+                | ".txt"  `isSuffixOf` n = "text/plain"
+                | ".css"  `isSuffixOf` n = "text/css"
+                | ".html" `isSuffixOf` n = "text/html"
+                | ".json" `isSuffixOf` n = "application/x-javascript"
+                | otherwise = "text/plain"
 
 handleCmd :: (MVar Scurry) -> Request -> IO Response
 handleCmd mv r@(Request {}) = do
     (readMVar mv) >>= (return . jsApplicationOK . encodeJSON)
 
--- Default response
-defResponse :: Response
-defResponse = Response {
-    resCode = 200,
+mkResponse :: FilePath -> IO Response
+mkResponse p = do
+    b <- readFile p
+
+    return $ Response {
+        resCode = 200,
+        resHeaders = [contentType (decideContent p)],
+        resBody = b
+    }
+
+badResponse :: Response
+badResponse = Response {
+    resCode = 404,
     resHeaders = [contentType "text/plain"],
-    resBody = "Default Response"
+    resBody = "File not found."
 }
 
--- Wrap string response as HTML
-htmlOK :: String -> Response
-htmlOK body = defResponse {
-    resHeaders = [contentType "text/html"],
-    resBody = body
-}
-
--- Wrap string response as JavaScript
-javaScriptOK :: String -> Response
-javaScriptOK body = defResponse {
-    resHeaders = [contentType "text/javascript"],
-    resBody = body
-}
-
--- Wrap string response as CSS
-styleSheetOK :: String -> Response
-styleSheetOK body = defResponse {
-    resHeaders = [contentType "text/css"],
-    resBody = body
-}
-
--- Write string response as JavaScript Application
 jsApplicationOK :: String -> Response
-jsApplicationOK body = defResponse {
+jsApplicationOK body = Response {
+    resCode = 200,
     resHeaders = [contentType "application/x-javascript"],
     resBody = body
 }

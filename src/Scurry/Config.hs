@@ -1,10 +1,8 @@
 module Scurry.Config (
     appName,
     userDataDir,
-    uiIndex,
-    uiJQuery,
-    uiStyle,
-    uiScript,
+    uiFile,
+    indexFile,
 ) where
 
 import System.Directory
@@ -19,14 +17,14 @@ userDataDir = do
     createDirectoryIfMissing True d
     return d
 
-uiIndex :: IO FilePath
-uiIndex = getDataFileName "ui/index.html"
+indexFile :: String
+indexFile = "/scurry.html"
 
-uiJQuery :: IO FilePath
-uiJQuery = getDataFileName "ui/jquery-1.3.1.js"
+uiFile :: String -> IO (Maybe FilePath)
+uiFile m = do
+    n <- getDataFileName $ "ui" ++ m
+    e <- doesFileExist n
 
-uiStyle :: IO FilePath
-uiStyle = getDataFileName "ui/style.css"
-
-uiScript :: IO FilePath
-uiScript = getDataFileName "ui/script.js"
+    return $ case e of
+                False -> Nothing
+                True -> Just n
