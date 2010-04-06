@@ -10,7 +10,9 @@
 		<script type="text/javascript" src="script.js"></script>
         <script type="text/javascript">
             $(function () {
-                $("#tabs").tabs();
+                $("#tabs-control").tabs({ collapsible: true});
+                $("#tabs-settings").tabs({ collapsible: true});
+                $("#tabs-statistics").tabs({ collapsible: true});
                 $("#genKey").button();
                 $("#save-user").button();
                 $("#save-network").button();
@@ -25,13 +27,31 @@
             <div id="header">
                 <h1>Scurry - A Social VPN</h1>
             </div>
-            <div id="tabs">
+
+            <h3>Control</h3>
+            <div id="tabs-control">
                 <ul>
-                    <li><a href="#tabs-1">User</a></li>
-                    <li><a href="#tabs-2">Network</a></li>
-                    <li><a href="#tabs-3">VPN</a></li>
+                    <li><a href="#control-tabs-1">Scurry</a></li>
+                    <li><a href="#control-tabs-2">Peers</a></li>
+                    <li><a href="#control-tabs-3">Network</a></li>
                 </ul>
-                <div id="tabs-1">
+                <div id="control-tabs-1">
+                    <form id="control-scurry">
+                        <p> <input type="button" id="start" value="Start Scurry" /> </p>
+                    </form>
+                </div>
+                <div id="control-tabs-2">Peers</div>
+                <div id="control-tabs-3">Network</div>
+            </div>
+
+            <h3>Settings</h3>
+            <div id="tabs-settings">
+                <ul>
+                    <li><a href="#settings-tabs-1">User</a></li>
+                    <li><a href="#settings-tabs-2">Network</a></li>
+                    <li><a href="#settings-tabs-3">VPN</a></li>
+                </ul>
+                <div id="settings-tabs-1">
                     <h2>User Settings</h2>
                     <form id="form-user">
                         <p> User Name: <input type="text" name="username" /> </p>
@@ -43,7 +63,7 @@
                         <p> <input type="button" id="save-user" value="Save" /> </p>
                     </form>
                 </div>
-                <div id="tabs-2">
+                <div id="settings-tabs-2">
                     <h2>Network Settings</h2>
                     <form id="form-network">
                         <p> Bind Address: <input type="text" name="ip-address" /> </p>
@@ -52,7 +72,7 @@
                         <p> <input type="button" id="save-network" value="Save" /> </p>
                     </form>
                 </div>
-                <div id="tabs-3">
+                <div id="settings-tabs-3">
                     <h2>VPN Settings</h2>
                     <form id="form-vpn">
                         <p> MAC Address: <input type="text" name="ip-address" disabled="disabled" /> </p>
@@ -62,6 +82,18 @@
                         <p> <input type="button" id="save-vpn" value="Save" /> </p>
                     </form>
                 </div>
+            </div>
+
+            <h3>Statistics</h3>
+            <div id="tabs-statistics">
+                <ul>
+                    <li><a href="#statistics-tabs-1">Usage</a></li>
+                    <li><a href="#statistics-tabs-2">Connections</a></li>
+                    <li><a href="#statistics-tabs-3">Graph</a></li>
+                </ul>
+                <div id="statistics-tabs-1">Usage</div>
+                <div id="statistics-tabs-2">Connections</div>
+                <div id="statistics-tabs-3">Graph</div>
             </div>
         </div>
     </body>
