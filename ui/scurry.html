@@ -7,6 +7,7 @@
 		<link type="text/css" href="css/humanity/jquery-ui-1.8.custom.css" rel="stylesheet" />	
 		<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.8.custom.min.js"></script>
+		<script type="text/javascript" src="script.js"></script>
         <script type="text/javascript">
             $(function () {
                 $("#tabs").tabs();
@@ -15,6 +16,8 @@
                 $("#save-network").button();
                 $("#save-vpn").button();
             });
+
+            window.onload = startup;
         </script>
     </head>
     <body>
@@ -58,30 +61,8 @@
                         <hr />
                         <p> <input type="button" id="save-vpn" value="Save" /> </p>
                     </form>
-                
+                </div>
             </div>
-        <!--
-            <div id="header">
-                <h1>Scurry VPN</h1>
-                <h2>Settings</h2>
-            </div>
-            <div id="nav">
-                <ul>
-                    <li><a href="#">Settings</a></li>
-                </ul>
-            </div>
-            <div id="main">
-                <h2>Network</h2>
-                <h2>User</h2>
-                <input type="text" name="date" id="date" />
-            </div>
-            <div id="sidebar">
-                <h1>At a Glance</h1>
-            </div>
-            <div id="footer">
-                <p>Copyright: John Van Enk, 2010.</p>
-            </div>
-        -->
         </div>
     </body>
 </html>
