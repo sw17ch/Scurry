@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<title>Scurry - A social VPN</title>
+		<link type="text/css" href="style.css" rel="stylesheet" />
+		<link type="text/css" href="css/humanity/jquery-ui-1.8.custom.css" rel="stylesheet" />	
+		<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.8.custom.min.js"></script>
+        <script type="text/javascript">
+            $(function () {
+                $("#tabs").tabs();
+                $("#genKey").button();
+                $("#save-user").button();
+                $("#save-network").button();
+                $("#save-vpn").button();
+            });
+        </script>
+    </head>
+    <body>
+        <div id="wrap">
+            <div id="header">
+                <h1>Scurry - A Social VPN</h1>
+            </div>
+            <div id="tabs">
+                <ul>
+                    <li><a href="#tabs-1">User</a></li>
+                    <li><a href="#tabs-2">Network</a></li>
+                    <li><a href="#tabs-3">VPN</a></li>
+                </ul>
+                <div id="tabs-1">
+                    <h2>User Settings</h2>
+                    <form id="form-user">
+                        <p> User Name: <input type="text" name="username" /> </p>
+                        <hr />
+                        <p> Public Key: <input type="text" name ="pubkey" /> </p>
+                        <p> Private Key: <input type="text" name="prvkey" /> </p>
+                        <p> <input type="button" id="genKey" value="Generate New Key Keys" /> </p>
+                        <hr />
+                        <p> <input type="button" id="save-user" value="Save" /> </p>
+                    </form>
+                </div>
+                <div id="tabs-2">
+                    <h2>Network Settings</h2>
+                    <form id="form-network">
+                        <p> Bind Address: <input type="text" name="ip-address" /> </p>
+                        <p> Bind Port: <input type="text" name="ip-address" /> </p>
+                        <hr />
+                        <p> <input type="button" id="save-network" value="Save" /> </p>
+                    </form>
+                </div>
+                <div id="tabs-3">
+                    <h2>VPN Settings</h2>
+                    <form id="form-vpn">
+                        <p> MAC Address: <input type="text" name="ip-address" disabled="disabled" /> </p>
+                        <p> IP Address: <input type="text" name="ip-address" /> </p>
+                        <p> Network Mask: <input type="text" name="ip-address" /> </p>
+                        <hr />
+                        <p> <input type="button" id="save-vpn" value="Save" /> </p>
+                    </form>
+                
+            </div>
+        <!--
+            <div id="header">
+                <h1>Scurry VPN</h1>
+                <h2>Settings</h2>
+            </div>
+            <div id="nav">
+                <ul>
+                    <li><a href="#">Settings</a></li>
+                </ul>
+            </div>
+            <div id="main">
+                <h2>Network</h2>
+                <h2>User</h2>
+                <input type="text" name="date" id="date" />
+            </div>
+            <div id="sidebar">
+                <h1>At a Glance</h1>
+            </div>
+            <div id="footer">
+                <p>Copyright: John Van Enk, 2010.</p>
+            </div>
+        -->
+        </div>
+    </body>
+</html>

@@ -1,0 +1,24 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    color: #000;
+    
+    font-family: arial;
+    font-size: 0.9em;
+}
+
+#wrap {
+    width: 60em;
+    margin: 1em auto;
+}
+
+#footer {
+    clear: both;
+}
+
+h1, h2 {
+    padding:0 0 0 0;
+    margin:0 0 0 0;
+}
+
