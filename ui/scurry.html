@@ -11,12 +11,16 @@
         <script type="text/javascript">
             $(function () {
                 $("#tabs-control").tabs({ collapsible: true});
+                $("#button-start").button();
+
+
                 $("#tabs-settings").tabs({ collapsible: true});
-                $("#tabs-statistics").tabs({ collapsible: true});
-                $("#genKey").button();
+                $("#button-genKey").button();
                 $("#save-user").button();
                 $("#save-network").button();
                 $("#save-vpn").button();
+
+                $("#tabs-statistics").tabs({ collapsible: true});
             });
 
             window.onload = startup;
@@ -37,7 +41,7 @@
                 </ul>
                 <div id="control-tabs-1">
                     <form id="control-scurry">
-                        <p> <input type="button" id="start" value="Start Scurry" /> </p>
+                        <p> <input type="button" id="button-start" value="Start Scurry" /> </p>
                     </form>
                 </div>
                 <div id="control-tabs-2">Peers</div>
@@ -58,7 +62,7 @@
                         <hr />
                         <p> Public Key: <input type="text" name ="pubkey" /> </p>
                         <p> Private Key: <input type="text" name="prvkey" /> </p>
-                        <p> <input type="button" id="genKey" value="Generate New Key Keys" /> </p>
+                        <p> <input type="button" id="button-genKey" value="Generate New Key Keys" /> </p>
                         <hr />
                         <p> <input type="button" id="save-user" value="Save" /> </p>
                     </form>
