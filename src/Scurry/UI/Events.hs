@@ -17,6 +17,8 @@ data UIEvent = UIEvent EventID EventCode
     deriving (Show)
 
 data ResponseCode = OK
+                  | TimeOut
+                  | NoResponse
     deriving (Show)
 data UIResponse = UIResponse EventID ResponseCode
     deriving (Show)

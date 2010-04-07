@@ -33,48 +33,19 @@ begin s = do
 
     uiT <- forkIO $ ui state events responses
 
-    let die = do killThread uiT
+    let readC = atomically $ readTChan events
+        writeC = atomically . (writeTChan responses)
+        die = do killThread uiT
                  yield
                  exitSuccess
 
     forever $ do
-        (UIEvent ident code) <- atomically $ readTChan events
+        (UIEvent txid code) <- atomically $ readTChan events
         case code of
-            Shutdown -> die
+            Shutdown -> writeC (UIResponse txid OK) >> shutdownWait >> die
+            NoEvent  -> return ()
 
-{-
-begin :: Scurry -> IO ()
-begin s = do
-    scurry  <- newMVar s    -- Global state variable
-    cleanup <- newEmptyMVar -- Global signal to cleanup
-
-    ui_t  <- forkIO $ ui      scurry cleanup
-    tap_t <- forkIO $ tapTask scurry cleanup
-    net_t <- forkIO $ netTask scurry cleanup
-
-    -- When we pass this, some one triggered a cleanup
-    readMVar cleanup
-
-    putStrLn "Tear down UI..."
-    throwTo ui_t  TearDown
-
-    putStrLn "Tear down TAPTask..."
-    throwTo tap_t TearDown
-
-    putStrLn "Tear down NetTask..."
-    throwTo net_t TearDown
-
-    -- Murderous rampage time...
-
-    putStrLn "Killing UI..."
-    killThread ui_t
-
-    putStrLn "Killing TAPTask..."
-    killThread tap_t
-
-    putStrLn "Killing NetTask..."
-    killThread net_t
-
-    -- Done!
-    putStrLn "Done. Thanks for using Scurry."
--}
+    where
+        shutdownWait = do
+            putStrLn "Scurry going down..."
+            threadDelay $ 5 * 1000000
