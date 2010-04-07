@@ -29,6 +29,7 @@ Data-Files: ui/css/humanity/jquery-ui-1.8.custom.css,
             ui/scurry.html,
             ui/script.js,
             ui/style.css,
+            ui/js/jquery.uuid.js,
             ui/js/jquery-1.4.2.min.js,
             ui/js/jquery-ui-1.8.custom.min.js
                 
@@ -47,7 +48,8 @@ executable scurry
                    httpd-shed               >= 0.4      && < 0.5,
                    json                     >= 0.4.3    && < 0.5,
                    HsOpenSSL                >= 0.6.5    && < 0.7,
-                   tuntap                   >= 0.0.2    && < 0.1.0
+                   tuntap                   >= 0.0.2    && < 0.1.0,
+                   stm                      >= 2.1.1.2  && < 2.1.2
 
 
     hs-source-dirs:     src

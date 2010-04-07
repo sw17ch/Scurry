@@ -7,19 +7,23 @@
 		<link type="text/css" href="css/humanity/jquery-ui-1.8.custom.css" rel="stylesheet" />	
 		<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.8.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery.uuid.js"></script>
 		<script type="text/javascript" src="script.js"></script>
         <script type="text/javascript">
             $(function () {
+                /* Control */
                 $("#tabs-control").tabs({ collapsible: true});
                 $("#button-start").button();
+                $("#button-shutdown").button();
 
-
+                /* Settings */
                 $("#tabs-settings").tabs({ collapsible: true});
                 $("#button-genKey").button();
                 $("#save-user").button();
                 $("#save-network").button();
                 $("#save-vpn").button();
 
+                /* Statistics */
                 $("#tabs-statistics").tabs({ collapsible: true});
             });
 
@@ -32,6 +36,11 @@
                 <h1>Scurry - A Social VPN</h1>
             </div>
 
+            <div id="status">
+                <h2> Status </h2>
+                <p id="text-status"> I don't know anything about anything yet. </p>
+            </div>
+
             <h3>Control</h3>
             <div id="tabs-control">
                 <ul>
@@ -42,10 +51,15 @@
                 <div id="control-tabs-1">
                     <form id="control-scurry">
                         <p> <input type="button" id="button-start" value="Start Scurry" /> </p>
+                        <p> <input type="button" id="button-shutdown" value="Shutdown Scurry" /> </p>
                     </form>
                 </div>
-                <div id="control-tabs-2">Peers</div>
-                <div id="control-tabs-3">Network</div>
+                <div id="control-tabs-2">
+                    <p> I don't have any information about peers yet. Sad. </p>
+                </div> 
+                <div id="control-tabs-3">
+                    <p> I don't have any information about the network yet. Sad. </p>
+                </div>
             </div>
 
             <h3>Settings</h3>
@@ -95,9 +109,15 @@
                     <li><a href="#statistics-tabs-2">Connections</a></li>
                     <li><a href="#statistics-tabs-3">Graph</a></li>
                 </ul>
-                <div id="statistics-tabs-1">Usage</div>
-                <div id="statistics-tabs-2">Connections</div>
-                <div id="statistics-tabs-3">Graph</div>
+                <div id="statistics-tabs-1">
+                    <p> We'll do something with Flot here eventually. </p>
+                </div>
+                <div id="statistics-tabs-2">
+                    <p> I need to find something neat to show connections between peers here. </p>
+                </div>
+                <div id="statistics-tabs-3">
+                    <p> I need to find a way to show a connection graph between peers here. </p>
+                </div>
             </div>
         </div>
     </body>
