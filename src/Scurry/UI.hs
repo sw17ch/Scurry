@@ -3,11 +3,16 @@
 module Scurry.UI where
 
 import Data.List
+import Data.Maybe
+import Control.Monad
+import Control.Concurrent.MVar
+import Control.Monad.STM
+import Control.Concurrent.STM.TChan
 
 import Scurry.Scurry
 import Scurry.Config
-
-import Control.Concurrent.MVar
+import Scurry.UI.Queries
+import Scurry.UI.Events
 
 import Text.JSON.Generic
 
@@ -18,26 +23,32 @@ import Network.URI
 port :: Int
 port = 24999
 
-ui :: (MVar Scurry) -> (MVar ()) -> IO ()
-ui mv shutdown = do
+ui :: (MVar Scurry) -> (TChan UIEvent) -> (TChan UIResponse) -> IO ()
+ui state events responses = do
     a <- inet_addr "127.0.0.1" 
-    initServerBind port a (server mv)
+    initServerBind port a (server state events responses)
 
-logger :: Request -> IO ()
-logger r = print r
+logger :: Request -> Response -> IO ()
+logger rq rs = putStrLn $ "UI: (" ++ show (resCode rs) ++ ") " ++ (uriPath . reqURI $ rq)
 
-server :: (MVar Scurry) -> Request -> IO Response
-server mv r@(Request {reqURI}) = do
-    logger r
-
-    case uriPath reqURI of
-        "/" -> normal indexFile
-        other -> normal other
-
+server :: (MVar Scurry) -> (TChan UIEvent) -> (TChan UIResponse) -> Request -> IO Response
+server state events responses r@(Request {reqURI}) = do
+    res <- case uriPath reqURI of
+                "/sq" -> checkQuery
+                "/"   -> normal indexFile
+                other -> normal other
+    logger r res >> return res
     where
+        checkQuery = do
+            (event,response) <- handleQuery state r
+            writeIfEvent event
+            return response
+
+        writeIfEvent (UIEvent _ NoEvent) = return ()
+        writeIfEvent event = atomically $ writeTChan events event
+
         normal fn = do
             f <- uiFile fn
-
             case f of
                 (Just n) -> mkResponse n
                 Nothing -> return badResponse
