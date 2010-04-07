@@ -40,7 +40,7 @@ begin s = do
                  exitSuccess
 
     forever $ do
-        (UIEvent txid code) <- atomically $ readTChan events
+        (UIEvent txid code) <- readC
         case code of
             Shutdown -> writeC (UIResponse txid OK) >> shutdownWait >> die
             NoEvent  -> return ()
