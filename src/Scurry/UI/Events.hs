@@ -13,13 +13,13 @@ type EventID = String
 data EventCode = Shutdown
                | NoEvent
     deriving (Show)
-data UIEvent = UIEvent EventID EventCode
+data UIEvent = UIEvent { eventID :: EventID, eventCode :: EventCode }
     deriving (Show)
 
 data ResponseCode = OK
                   | TimeOut
                   | NoResponse
     deriving (Show)
-data UIResponse = UIResponse EventID ResponseCode
+data UIResponse = UIResponse { responseID :: EventID, responseCode :: ResponseCode }
     deriving (Show)
 
