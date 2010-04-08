@@ -2,7 +2,9 @@ module Scurry.UI.Queries (
     handleQuery,
 ) where
 
+import Data.Data
 import Data.Maybe
+import Text.JSON.Generic
 
 import Control.Concurrent.MVar
 import Network.Shed.Httpd
@@ -29,24 +31,19 @@ noTxId = Response {
     resBody = "No transaction ID provided."
 }
 
-norm :: (Show a) => a -> Response
-norm a = Response {
-    resCode = 200,
-    resHeaders = [contentType "text/plain"],
-    resBody = show a
-}
-
 queryToEvent :: Query -> E.EventCode
 queryToEvent Shutdown = E.Shutdown
 queryToEvent BadQuery = E.NoEvent
 
-handleQuery :: (MVar Scurry) -> Request -> IO (E.UIEvent,Response)
+handleQuery :: (MVar Scurry) -> Request -> IO (Either E.UIEvent Response)
 handleQuery state req = do
     putStrLn $ unwords [show txid, show args]
 
-    if isJust txid
-        then return (E.UIEvent (fromJust txid) event, norm queries)
-        else return (E.UIEvent (fromJust txid) event, noTxId)
+    return $ case txid of
+                Nothing  -> Right noTxId
+                (Just t) -> case event of
+                                E.NoEvent -> Right badQuery
+                                e -> Left (E.UIEvent t e)
     where
         rawargs = queryToArguments $ uriQuery . reqURI $ req
         txid = lookup "txid" rawargs

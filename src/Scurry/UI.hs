@@ -39,15 +39,15 @@ server state events responses r@(Request {reqURI}) = do
     logger r res >> return res
     where
         checkQuery = do
-            (event,response) <- handleQuery state r
-            writeIfEvent event
-            return response
+            eOrR <- handleQuery state r
+            r    <- case eOrR of
+                         (Right rsp)  -> return rsp
+                         (Left event) -> do
+                            putMVar events event
+                            mr <- takeMVar responses
+                            return $ jsonRsp mr
 
-        writeIfEvent (UIEvent _ NoEvent) = return ()
-        writeIfEvent event = do
-            putStrLn "Writing..."
-            putMVar events event
-            putStrLn "...done"
+            return $ r
 
         normal fn = do
             f <- uiFile fn
@@ -76,6 +76,13 @@ mkResponse p = do
         resHeaders = [contentType (decideContent p)],
         resBody = b
     }
+
+jsonRsp :: (Data a, Typeable a) => a -> Response
+jsonRsp a = Response {
+    resCode = 200,
+    resHeaders = [contentType "application/x-javascript"],
+    resBody = encodeJSON a
+}
 
 badResponse :: Response
 badResponse = Response {

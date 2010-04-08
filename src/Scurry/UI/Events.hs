@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+
 module Scurry.UI.Events (
     EventID,
 
@@ -8,18 +10,20 @@ module Scurry.UI.Events (
     UIResponse(..),
 ) where
 
+import Data.Data
+
 type EventID = String
 
 data EventCode = Shutdown
                | NoEvent
-    deriving (Show)
+    deriving (Show,Data,Typeable)
 data UIEvent = UIEvent { eventID :: EventID, eventCode :: EventCode }
-    deriving (Show)
+    deriving (Show,Data,Typeable)
 
 data ResponseCode = OK
                   | TimeOut
                   | NoResponse
-    deriving (Show)
+    deriving (Show,Data,Typeable)
 data UIResponse = UIResponse { responseID :: EventID, responseCode :: ResponseCode }
-    deriving (Show)
+    deriving (Show,Data,Typeable)
 
