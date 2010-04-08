@@ -6,7 +6,6 @@ import Control.Monad
 import Control.Monad.STM
 import Control.Concurrent
 import Control.Concurrent.MVar
-import Control.Concurrent.STM.TChan
 
 import System.Exit
 
@@ -28,13 +27,13 @@ import Scurry.NetTask
 begin :: Scurry -> IO ()
 begin s = do
     state     <- newMVar s
-    events    <- newTChanIO
-    responses <- newTChanIO
+    events    <- newEmptyMVar
+    responses <- newEmptyMVar
 
     uiT <- forkIO $ ui state events responses
 
-    let readC = atomically $ readTChan events
-        writeC = atomically . (writeTChan responses)
+    let readC = takeMVar events
+        writeC = putMVar responses
         die = do killThread uiT
                  yield
                  exitSuccess

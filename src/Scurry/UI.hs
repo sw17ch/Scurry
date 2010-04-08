@@ -7,7 +7,6 @@ import Data.Maybe
 import Control.Monad
 import Control.Concurrent.MVar
 import Control.Monad.STM
-import Control.Concurrent.STM.TChan
 
 import Scurry.Scurry
 import Scurry.Config
@@ -23,7 +22,7 @@ import Network.URI
 port :: Int
 port = 24999
 
-ui :: (MVar Scurry) -> (TChan UIEvent) -> (TChan UIResponse) -> IO ()
+ui :: (MVar Scurry) -> (MVar UIEvent) -> (MVar UIResponse) -> IO ()
 ui state events responses = do
     a <- inet_addr "127.0.0.1" 
     initServerBind port a (server state events responses)
@@ -31,7 +30,7 @@ ui state events responses = do
 logger :: Request -> Response -> IO ()
 logger rq rs = putStrLn $ "UI: (" ++ show (resCode rs) ++ ") " ++ (uriPath . reqURI $ rq)
 
-server :: (MVar Scurry) -> (TChan UIEvent) -> (TChan UIResponse) -> Request -> IO Response
+server :: (MVar Scurry) -> (MVar UIEvent) -> (MVar UIResponse) -> Request -> IO Response
 server state events responses r@(Request {reqURI}) = do
     res <- case uriPath reqURI of
                 "/sq" -> checkQuery
@@ -45,7 +44,10 @@ server state events responses r@(Request {reqURI}) = do
             return response
 
         writeIfEvent (UIEvent _ NoEvent) = return ()
-        writeIfEvent event = atomically $ writeTChan events event
+        writeIfEvent event = do
+            putStrLn "Writing..."
+            putMVar events event
+            putStrLn "...done"
 
         normal fn = do
             f <- uiFile fn
