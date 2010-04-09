@@ -62,7 +62,8 @@ begin s = do
     where
         shutdownWait = do
             putStrLn "Scurry going down..."
-            mapM_ (\n -> print n >> threadDelay 1000000) (reverse [1..5])
+            mapM_ (\n ->
+                print n >> threadDelay 1000000) (reverse [1..5] :: [Int])
 
 stopThreads :: (MVar ScurryThreads) -> IO ()
 stopThreads t = do
