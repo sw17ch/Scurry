@@ -14,6 +14,7 @@ import Scurry.Scurry
 import qualified Scurry.UI.Events as E
 
 data Query = Shutdown
+           | Start
            | BadQuery -- We didn't recognize this.
     deriving (Show)
 
@@ -32,6 +33,7 @@ noTxId = Response {
 }
 
 queryToEvent :: Query -> E.EventCode
+queryToEvent Start    = E.Start
 queryToEvent Shutdown = E.Shutdown
 queryToEvent BadQuery = E.NoEvent
 
@@ -57,4 +59,5 @@ handleQuery state req = do
 
 pairToQuery :: (String,String) -> Query
 pairToQuery ("event","shutdown") = Shutdown
+pairToQuery ("event","start")    = Start
 pairToQuery _                    = BadQuery

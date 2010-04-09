@@ -9,10 +9,24 @@ function dialogMessage(msg) {
     }).html('<p>' + msg + '<p>');
 }
 
+function sendStart() {
+    var txid = $.uuid();
+
+    $.ajax({
+        data: { 'txid': txid, 'event': 'start' },
+        success: function (data) {
+            if (data && "OK" == data.responseCode) {
+                dialogMessage("Success!");
+            } else {
+                dialogMessage("Failure!");
+            }
+        }
+    });
+}
+
 /* Sends the shutdown command to Scurry. This will kill the process. */
 function sendShutdown() {
-    var button = $('#button-shutdown'),
-        txid = $.uuid();
+    var txid = $.uuid();
 
     $.ajax({
         data: { 'txid': txid, 'event': 'shutdown' },
@@ -28,6 +42,7 @@ function sendShutdown() {
 
 /* Setup binds */
 function setupBinds() {
+    $('#button-start').click(sendStart);
     $('#button-shutdown').click(sendShutdown);
 }
 

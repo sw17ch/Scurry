@@ -1,12 +1,13 @@
 {-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
 
-module Scurry.UI where
+module Scurry.UI (
+    ui,
+) where
 
 import Data.List
 import Data.Maybe
 import Control.Monad
 import Control.Concurrent.MVar
-import Control.Monad.STM
 
 import Scurry.Scurry
 import Scurry.Config
@@ -45,14 +46,14 @@ server state events responses r@(Request {reqURI}) = do
     where
         checkQuery = do
             eOrR <- handleQuery state r
-            r    <- case eOrR of
+            r'   <- case eOrR of
                          (Right rsp)  -> return rsp
                          (Left event) -> do
                             putMVar events event
                             mr <- takeMVar responses
                             return $ jsonRsp mr
 
-            return $ r
+            return $ r'
 
         normal fn = do
             f <- uiFile fn
@@ -67,10 +68,6 @@ decideContent n | ".js"   `isSuffixOf` n = "text/javascript"
                 | ".html" `isSuffixOf` n = "text/html"
                 | ".json" `isSuffixOf` n = "application/x-javascript"
                 | otherwise = "text/plain"
-
-handleCmd :: MVar Scurry -> Request -> IO Response
-handleCmd mv r@(Request {}) = do
-    (readMVar mv) >>= (return . jsApplicationOK . encodeJSON)
 
 mkResponse :: FilePath -> IO Response
 mkResponse p = do
@@ -96,9 +93,3 @@ badResponse = Response {
     resBody = "File not found."
 }
 
-jsApplicationOK :: String -> Response
-jsApplicationOK body = Response {
-    resCode = 200,
-    resHeaders = [contentType "application/x-javascript"],
-    resBody = body
-}
