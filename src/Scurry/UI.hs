@@ -22,15 +22,20 @@ import Network.URI
 port :: Int
 port = 24999
 
-ui :: (MVar Scurry) -> (MVar UIEvent) -> (MVar UIResponse) -> IO ()
+ui :: MVar Scurry -> MVar UIEvent -> MVar UIResponse -> IO ()
 ui state events responses = do
     a <- inet_addr "127.0.0.1" 
     initServerBind port a (server state events responses)
 
 logger :: Request -> Response -> IO ()
-logger rq rs = putStrLn $ "UI: (" ++ show (resCode rs) ++ ") " ++ (uriPath . reqURI $ rq)
+logger rq rs = putStrLn $
+    "UI: (" ++ show (resCode rs) ++ ") " ++ (uriPath . reqURI $ rq)
 
-server :: (MVar Scurry) -> (MVar UIEvent) -> (MVar UIResponse) -> Request -> IO Response
+server :: MVar Scurry
+       -> MVar UIEvent
+       -> MVar UIResponse
+       -> Request
+       -> IO Response
 server state events responses r@(Request {reqURI}) = do
     res <- case uriPath reqURI of
                 "/sq" -> checkQuery
@@ -63,7 +68,7 @@ decideContent n | ".js"   `isSuffixOf` n = "text/javascript"
                 | ".json" `isSuffixOf` n = "application/x-javascript"
                 | otherwise = "text/plain"
 
-handleCmd :: (MVar Scurry) -> Request -> IO Response
+handleCmd :: MVar Scurry -> Request -> IO Response
 handleCmd mv r@(Request {}) = do
     (readMVar mv) >>= (return . jsApplicationOK . encodeJSON)
 
