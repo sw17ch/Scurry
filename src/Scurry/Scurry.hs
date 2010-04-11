@@ -9,7 +9,7 @@ import Scurry.Data.Network
 import Text.JSON.Generic
 
 data Scurry = Scurry {
-    vpnAddr  :: Maybe VPNAddr,
+    vpnAddr  :: Maybe IPV4Addr,
     vpnMask  :: Maybe IPV4Addr,
     bindAddr :: IPV4Addr,
     bindPort :: IPPort,

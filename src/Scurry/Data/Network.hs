@@ -40,9 +40,8 @@ inet_addr :: String -> Maybe IPV4Addr
 inet_addr = unsafePerformIO . catchToMaybe . mk
     where mk v = liftM MkIPV4Addr (INET.inet_addr v)
 
-inet_ntoa :: IPV4Addr -> Maybe String
-inet_ntoa (MkIPV4Addr a) = unsafePerformIO unmk
-    where unmk = catchToMaybe . INET.inet_ntoa $ a
+inet_ntoa :: IPV4Addr -> String
+inet_ntoa (MkIPV4Addr a) = unsafePerformIO $ INET.inet_ntoa a
 
 catchToMaybe :: (IO a) -> IO (Maybe a)
 catchToMaybe a = catch (liftM Just a) (\_ -> return Nothing)
@@ -64,14 +63,10 @@ instance Read VPNAddr where
         where v = read r
 
 instance Show IPV4Addr where
-    show a = case inet_ntoa a of
-                  Just s -> s
-                  Nothing -> error "This should never happen evar! O_o"
+    show = inet_ntoa
 
 instance Show VPNAddr where
-    show (MkVPNAddr a)= case inet_ntoa a of
-                           Just s -> s
-                           Nothing -> error "This should never happen evar! O_o"
+    show (MkVPNAddr a)= inet_ntoa a
 
 instance Show IPPort where
     show (MkIPPort p) = show p

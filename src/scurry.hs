@@ -8,7 +8,7 @@ import System.Environment
 import System.Exit
 import System.Console.GetOpt
 
-data Opt = OVPNAddr  VPNAddr
+data Opt = OVPNAddr  IPV4Addr
          | OVPNMask  IPV4Addr
          | OBindAddr IPV4Addr
          | OBindPort IPPort
