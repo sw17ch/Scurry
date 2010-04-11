@@ -1,63 +1,78 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module Scurry.UI.Queries (
     handleQuery,
+    UIState(..),
 ) where
 
-import Data.Data
 import Data.Maybe
+import Data.Word
+
 import Text.JSON.Generic
 
 import Control.Concurrent.MVar
 import Network.Shed.Httpd
 import Network.URI
 
-import Scurry.Scurry
+import qualified Scurry.Scurry as S
 import qualified Scurry.UI.Events as E
+import Scurry.UI.Responses
+import Scurry.Data.Network
 
-data Query = Shutdown
-           | Start
-           | BadQuery -- We didn't recognize this.
-    deriving (Show)
+data Query = State
+           | BadMsg -- We didn't recognize this.
+    deriving (Eq,Show)
 
-badQuery :: Response
-badQuery = Response {
-    resCode = 404,
-    resHeaders = [contentType "text/plain"],
-    resBody = "Unknown query."
-}
-
-noTxId :: Response
-noTxId = Response {
-    resCode = 422,
-    resHeaders = [contentType "text/plain"],
-    resBody = "No transaction ID provided."
-}
-
-queryToEvent :: Query -> E.EventCode
-queryToEvent Start    = E.Start
-queryToEvent Shutdown = E.Shutdown
-queryToEvent BadQuery = E.NoEvent
-
-handleQuery :: (MVar Scurry) -> Request -> IO (Either E.UIEvent Response)
+handleQuery :: (MVar S.Scurry) -> Request -> IO (Either E.UIEvent Response)
 handleQuery state req = do
     putStrLn $ unwords [show txid, show args]
 
-    return $ case txid of
-                Nothing  -> Right noTxId
-                (Just t) -> case event of
-                                E.NoEvent -> Right badQuery
-                                e -> Left (E.UIEvent t e)
+    case txid of
+       Nothing  -> return $ Right noTxId
+       (Just t) -> case msg of
+                       (Left e)    -> return $ Left (E.UIEvent t e)
+                       (Right qry) -> qryToRsp state qry >>= (return . Right)
     where
         rawargs = queryToArguments $ uriQuery . reqURI $ req
         txid = lookup "txid" rawargs
         args = filter ((/= "txid") . fst) rawargs
-        queries = map pairToQuery args
+        msgs = map pairToMsg args
+        msg  = if 1 /= length msgs
+               then Right BadMsg
+               else head msgs
 
-        event = let es = map queryToEvent queries
-                in if 1 /= (length es)
-                    then E.NoEvent
-                    else head es
+pairToMsg :: (String,String) -> Either E.EventCode Query
+pairToMsg ("event","shutdown") = Left E.Shutdown
+pairToMsg ("event","start")    = Left E.Start
+pairToMsg ("query","state")    = Right State
+pairToMsg _                    = Right BadMsg
 
-pairToQuery :: (String,String) -> Query
-pairToQuery ("event","shutdown") = Shutdown
-pairToQuery ("event","start")    = Start
-pairToQuery _                    = BadQuery
+qryToRsp :: MVar S.Scurry -> Query -> IO Response
+qryToRsp s q | q == BadMsg = return badQuery
+             | q == State  = mkState s
+             | otherwise = error "Unable to convert query to response."
+
+mkState :: MVar S.Scurry -> IO Response
+mkState s = readMVar s >>= (return . jsonRsp . toState)
+
+-- Object to represent things we want to send as
+-- state to the user.
+data UIState = UIState {
+    vpnAddr  :: String,
+    vpnMask  :: String,
+    bindAddr :: String,
+    bindPort :: Word16
+} deriving (Data,Typeable)
+
+toState :: S.Scurry -> UIState
+toState s = UIState {
+    vpnAddr = case fmap inet_ntoa (S.vpnAddr s) of
+                (Just a) -> a
+                Nothing -> ""
+                ,
+    vpnMask = case fmap inet_ntoa (S.vpnMask s) of
+                (Just m) -> m
+                Nothing -> ""
+                ,
+    bindAddr = inet_ntoa (S.bindAddr s),
+    bindPort = unIPPort (S.bindPort s)
+}

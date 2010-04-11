@@ -13,8 +13,7 @@ import Scurry.Scurry
 import Scurry.Config
 import Scurry.UI.Queries
 import Scurry.UI.Events
-
-import Text.JSON.Generic
+import Scurry.UI.Responses
 
 import Network.Socket (inet_addr)
 import Network.Shed.Httpd
@@ -58,38 +57,5 @@ server state events responses r@(Request {reqURI}) = do
         normal fn = do
             f <- uiFile fn
             case f of
-                (Just n) -> mkResponse n
-                Nothing -> return badResponse
-
-decideContent :: FilePath -> String
-decideContent n | ".js"   `isSuffixOf` n = "text/javascript"
-                | ".txt"  `isSuffixOf` n = "text/plain"
-                | ".css"  `isSuffixOf` n = "text/css"
-                | ".html" `isSuffixOf` n = "text/html"
-                | ".json" `isSuffixOf` n = "application/x-javascript"
-                | otherwise = "text/plain"
-
-mkResponse :: FilePath -> IO Response
-mkResponse p = do
-    b <- readFile p
-
-    return $ Response {
-        resCode = 200,
-        resHeaders = [contentType (decideContent p)],
-        resBody = b
-    }
-
-jsonRsp :: (Data a, Typeable a) => a -> Response
-jsonRsp a = Response {
-    resCode = 200,
-    resHeaders = [contentType "application/x-javascript"],
-    resBody = encodeJSON a
-}
-
-badResponse :: Response
-badResponse = Response {
-    resCode = 404,
-    resHeaders = [contentType "text/plain"],
-    resBody = "File not found."
-}
-
+                (Just n) -> fileResponse n
+                Nothing -> return notFound

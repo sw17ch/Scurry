@@ -40,6 +40,16 @@ function sendShutdown() {
     });
 }
 
+/* Gets Scurry's internal state. */
+function getState(callback) {
+    var txid = $.uuid();
+
+    $.ajax({
+        data: { 'txid': txid, 'query': 'state' },
+        success: callback
+    });
+}
+
 /* Setup binds */
 function setupBinds() {
     $('#button-start').click(sendStart);
